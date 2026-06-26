@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MicroMundo Evolutivo v3</title>
+<title>MicroMundo Evolutivo</title>
 <style>
 :root{color-scheme:dark;--bg:#06100d;--panel:#0c1e19;--line:rgba(168,255,210,0.14);--text:#e4fdf2;--muted:#96c8b2;--faint:#5e8a77;--green:#5ee896;--mint:#92ffbf;--cyan:#5dcfff;--yellow:#ffd05c;--red:#ff5f72;--violet:#b08cff;--amber:#ffb347;--shadow:0 16px 48px rgba(0,0,0,0.38);font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -131,7 +131,7 @@ details p{margin-top:.5rem;}
 <main class="app">
 <section class="world-shell">
 <header class="topbar">
-<div class="brand"><h1>MicroMundo Evolutivo <small style="font-size:.55em;color:var(--faint);font-weight:400">v4</small> <span id="prestige-level" style="font-size:.5em;color:var(--violet);font-weight:700"></span><span id="prestige-diff" style="font-size:.45em;color:var(--faint);font-weight:400;margin-left:.3em"></span></h1><p>Idle game de computação viva — agentes evoluem, o ambiente muda sozinho, eventos desafiam seu raciocínio.</p></div>
+<div class="brand"><h1>MicroMundo Evolutivo <small id="app-version" style="font-size:.55em;color:var(--faint);font-weight:400"></small> <span id="prestige-level" style="font-size:.5em;color:var(--violet);font-weight:700"></span><span id="prestige-diff" style="font-size:.45em;color:var(--faint);font-weight:400;margin-left:.3em"></span></h1><p>Idle game de computação viva — agentes evoluem, o ambiente muda sozinho, eventos desafiam seu raciocínio.</p></div>
 <div class="ticker">
 <div class="tick-card"><span>ciclo</span><strong id="tc-cycle">0</strong></div>
 <div class="tick-card"><span>população</span><strong id="tc-pop">0</strong></div>
@@ -150,7 +150,7 @@ details p{margin-top:.5rem;}
 <section class="bottom">
 <div class="panel"><div class="panel-header"><h2>Controle <span id="lab-badge" style="display:none;font-size:.7rem;font-weight:900;color:var(--amber);background:rgba(255,179,71,.12);border:1px solid var(--amber);border-radius:4px;padding:.1rem .4rem;letter-spacing:.06em">[LAB]</span></h2><div style="display:flex;gap:.4rem;align-items:center"><button id="btn-ascend" class="primary" style="background:linear-gradient(175deg,#9b6fff,#6b3fd4);border-color:rgba(176,140,255,.5);color:#fff;font-size:.82rem" title="Apaga o mundo atual. Preserva compreensão em forma de Memória Evolutiva.">⬆ Ascender</button><button id="btn-pause" class="primary">Pausar</button></div></div>
 <div class="panel-body controls">
-<details id="god-tools" style="border:0;padding:0"><summary style="cursor:pointer;color:var(--amber);font-weight:700;font-size:.82rem;padding:.4rem 0">⚗ Ferramentas de Deus <span style="color:var(--faint);font-weight:400;font-size:.75rem">(ativa modo laboratório)</span></summary><div style="display:grid;gap:.5rem;margin-top:.5rem"><div class="btn-grid"><button id="btn-step">1 ciclo</button><button id="btn-reset">Nova run</button><button id="btn-catastrophe">Catástrofe</button><button id="btn-food">Chuva de comida</button><button id="btn-agents">Criar agentes</button><button id="btn-predators">Predadores: off</button></div><div class="btn-grid" style="grid-template-columns:1fr 1fr"><button id="btn-rand-event">Evento aleatório</button><button id="btn-force-quiz">Forçar quiz</button></div></div></details>
+<details id="god-tools" style="border:0;padding:0"><summary style="cursor:pointer;color:var(--amber);font-weight:700;font-size:.82rem;padding:.4rem 0">⚗ Ferramentas de Deus <span style="color:var(--faint);font-weight:400;font-size:.75rem">(ativa modo laboratório)</span></summary><div style="display:grid;gap:.5rem;margin-top:.5rem"><div class="btn-grid"><button id="btn-step">1 ciclo</button><button id="btn-reset">Nova run</button><button id="btn-catastrophe">Catástrofe</button><button id="btn-food">Chuva de comida</button><button id="btn-agents">Criar agentes</button><button id="btn-predators">Predadores: off</button></div><div class="btn-grid" style="grid-template-columns:1fr 1fr"><button id="btn-rand-event">Evento aleatório</button><button id="btn-force-quiz">Forçar quiz</button></div><button id="btn-reset-save" style="border-color:var(--red);color:var(--red);font-size:.78rem" title="Apaga todo o progresso salvo, incluindo prestígio.">🗑 Resetar save (zera prestígio)</button></div></details>
 <div class="resource-strip"><div class="resource"><span>biomassa</span><strong id="r-biomass">0</strong></div><div class="resource"><span>insight</span><strong id="r-insight">0</strong></div><div class="resource"><span>entropia</span><strong id="r-entropy">0%</strong></div><div class="resource"><span>capacidade</span><strong id="r-capacity">0</strong></div></div>
 <div class="world-state"><div class="resource"><span>ritmo</span><strong id="ws-pace">2.0x</strong></div><div class="resource"><span>mutação</span><strong id="ws-mut">7%</strong></div><div class="resource"><span>pressão</span><strong id="ws-pres">1.00</strong></div><div class="resource"><span>próx. evento</span><strong id="ws-timer">--:--</strong></div></div>
 <div class="active-effects" id="effects-panel"><div class="effect neutral"><strong>sem efeito ativo</strong><span class="effect-timer">mundo basal</span></div></div>
@@ -213,6 +213,10 @@ details p{margin-top:.5rem;}
 </main>
 <div class="modal-backdrop" id="modal-backdrop" aria-hidden="true"><div class="modal" id="modal-box" role="dialog" aria-modal="true"><div class="modal-header"><h2 id="modal-title">Evento</h2><span class="modal-type-label" id="modal-type-label">quiz</span></div><div class="modal-body" id="modal-body"></div></div></div>
 <div class="toast-wrap" id="toast-wrap"></div><script>
+/* ═══ VERSÃO — fonte única de verdade ═══ */
+const VERSION='v4.7';
+const SCHEMA_VERSION=2; // versão do formato de save (localStorage)
+
 /* ═══ CONFIG ═══ */
 const CFG={W:100,H:72,MAX_AGENTS:640,AGENT_MAX_AGE:3600,MAX_FOOD:520,MAX_POISON:260,FOOD_ENERGY_BASE:34,POISON_DAMAGE:28,TRAIL_DECAY:0.965,REPRO_BASE:126,REPRO_COST_FRAC:0.52,REPRO_LOGISTIC_EXP:2.25,REPRO_CROWDING_THRESH:0.38,BIOMASS_PER_AGENT:0.0010,BIOMASS_RECYCLER_BONUS:0.00020,BIOMASS_FOOD_PASSIVE:0.00008,RECYCLER_GAIN_BASE:0.35,INSIGHT_PER_BIRTH:0.018,INSIGHT_DIV_FACTOR:0.005,INSIGHT_POP_FACTOR:0.00006,ENTROPY_RELIEF_BASE:0.035,ENTROPY_CROWDING_MULT:0.18,ENTROPY_POP_PASSIVE:0.00008,ENTROPY_CAP:100,CROWDING_THRESH:0.52,DRIFT_INTERVAL:1500,PACE_BASE:2,PACE_MIN:0.45,PACE_MAX:8,MUTATION_BASE:0.07,MUTATION_MIN:0.005,MUTATION_MAX:0.28,PRESSURE_BASE:1.0,PRESSURE_MIN:0.55,PRESSURE_MAX:2.35,PRESSURE_ENTROPY_CAP:3.2,EVENT_INTERVAL_MS:2*60*60*1000,
   FIRST_EVENT_MS:10*60*1000,
@@ -221,6 +225,7 @@ const CFG={W:100,H:72,MAX_AGENTS:640,AGENT_MAX_AGE:3600,MAX_FOOD:520,MAX_POISON:
 /* ═══ ESTADO ═══ */
 let running=true,cycle=0,nextId=1,births=0,deaths=0,predEnabled=false,selectedId=null,cycleAcc=0,elapsedMs=0,lastFrameTs=0;
 let agents=[],foods=[],poisons=[],predators=[],trails=new Float32Array(CFG.W*CFG.H),history=[];
+let agentGrid=null; // spatial grid reconstruída a cada ciclo (acelera busca de vizinhos)
 let idle={biomass:80,insight:0,entropy:0};
 let world={pace:CFG.PACE_BASE,mutationRate:CFG.MUTATION_BASE,pressure:CFG.PRESSURE_BASE,eventCount:0,nextEventMs:CFG.EVENT_INTERVAL_MS};
 let effects=[],modalOpen=false;
@@ -258,16 +263,50 @@ function makeAgent(x,y,pg){const a={id:nextId++,x:x??rand(0,CFG.W),y:y??rand(0,C
 function makePredator(){return{x:rand(0,CFG.W),y:rand(0,CFG.H),vx:0,vy:0,energy:140};}
 function scatter(list,n,lMin=200,lMax=900){for(let i=0;i<n;i++)list.push({x:rand(0,CFG.W),y:rand(0,CFG.H),life:rand(lMin,lMax)});}
 
-function nearestExcept(list,excId,x,y,r2){let best=null,bd=r2;for(const it of list){if(it.id===excId)continue;const d=dist2(it,{x,y});if(d<bd){bd=d;best=it;}}return best;}
 function nearest(list,x,y,r2){let best=null,bd=r2;for(const it of list){const d=dist2(it,{x,y});if(d<bd){bd=d;best=it;}}return best;}
 function localTrail(x,y){const ix=Math.floor(wrap(x,CFG.W)),iy=Math.floor(wrap(y,CFG.H));return trails[iy*CFG.W+ix]||0;}
+
+/* ═══ SPATIAL GRID — substitui a busca de vizinhos O(n²) (v4.7) ═══
+   A consulta cara é "vizinho mais próximo entre agentes", feita por todo
+   agente a cada ciclo → O(pop²). Bucketizando a grade, cada consulta varre
+   apenas as células dentro do raio. Distância NÃO é toroidal — preserva o
+   comportamento original de nearest() (que também ignorava o wrap). */
+const GRID_CELL=10;
+const GRID_COLS=Math.ceil(CFG.W/GRID_CELL),GRID_ROWS=Math.ceil(CFG.H/GRID_CELL);
+function buildGrid(list){
+  const cells=new Array(GRID_COLS*GRID_ROWS);
+  for(let i=0;i<cells.length;i++)cells[i]=null;
+  for(const it of list){
+    let cx=Math.floor(it.x/GRID_CELL),cy=Math.floor(it.y/GRID_CELL);
+    if(cx<0)cx=0;else if(cx>=GRID_COLS)cx=GRID_COLS-1;
+    if(cy<0)cy=0;else if(cy>=GRID_ROWS)cy=GRID_ROWS-1;
+    const k=cy*GRID_COLS+cx;(cells[k]||(cells[k]=[])).push(it);
+  }
+  return cells;
+}
+function gridNearest(cells,x,y,r2,excId){
+  const span=Math.ceil(Math.sqrt(r2)/GRID_CELL);
+  const cx=Math.floor(x/GRID_CELL),cy=Math.floor(y/GRID_CELL);
+  const x0=Math.max(0,cx-span),x1=Math.min(GRID_COLS-1,cx+span);
+  const y0=Math.max(0,cy-span),y1=Math.min(GRID_ROWS-1,cy+span);
+  let best=null,bd=r2;
+  for(let gy=y0;gy<=y1;gy++)for(let gx=x0;gx<=x1;gx++){
+    const bucket=cells[gy*GRID_COLS+gx];if(!bucket)continue;
+    for(const it of bucket){
+      if(excId!==undefined&&it.id===excId)continue;
+      const dx=it.x-x,dy=it.y-y,d=dx*dx+dy*dy;
+      if(d<bd){bd=d;best=it;}
+    }
+  }
+  return best;
+}
 
 function moveAgent(a){
   const g=a.g;
   const food=nearest(foods,a.x,a.y,(16+g.curiosity*18)**2);
   const poison=nearest(poisons,a.x,a.y,(9+g.caution*18)**2);
   const threat=nearest(predators,a.x,a.y,400);
-  const friend=nearestExcept(agents,a.id,a.x,a.y,81);
+  const friend=agentGrid?gridNearest(agentGrid,a.x,a.y,81,a.id):nearest(agents,a.x,a.y,81);
   let ax=rand(-.14,.14)*g.curiosity,ay=rand(-.14,.14)*g.curiosity;
   if(food){const dx=food.x-a.x,dy=food.y-a.y,m=Math.hypot(dx,dy)||1;ax+=(dx/m)*(.11+g.curiosity*.18);ay+=(dy/m)*(.11+g.curiosity*.18);}
   if(poison){const dx=poison.x-a.x,dy=poison.y-a.y,m=Math.hypot(dx,dy)||1;ax-=(dx/m)*g.caution*.36;ay-=(dy/m)*g.caution*.36;}
@@ -332,6 +371,7 @@ function simStep(){
   if(predEnabled&&predators.length<7&&cycle%900===0)predators.push(makePredator());
   for(let i=0;i<trails.length;i++)trails[i]*=CFG.TRAIL_DECAY;
   worldDrift();
+  agentGrid=buildGrid(agents); // snapshot pré-loop p/ consulta de vizinhos O(1)~
   const nb=[];
   for(const a of agents){moveAgent(a);consumeAgent(a);reproduceAgent(a,nb);}
   agents=agents.concat(nb);movePredators();
@@ -527,7 +567,7 @@ const QUESTIONS=[
 {id:'a1',cat:'algoritmos',dif:1,stem:'Um agente percorre vizinhos em raio R para achar comida. Se R dobrar, quantas vezes mais posições ele examina?',opts:['2×','4×','R×','log R×'],cor:1,exp:'Área de círculo cresce com r². Dobrar R → 4× a área. Custo O(r²).',reward:{id:'rq',name:'Busca otimizada',type:'buff',cycles:1800,pace:.3,pressure:-.06,insight:8},penalty:{id:'pq',name:'Busca ineficiente',type:'debuff',cycles:1400,pressure:.2,entropy:8}},
 {id:'a2',cat:'algoritmos',dif:1,stem:'Qual estrutura permite acesso O(1) pelo índice?',opts:['Lista encadeada','Árvore binária','Array','Fila de prioridade'],cor:2,exp:'Array: memória contígua. Índice → endereço direto. O(1) garantido.',reward:{id:'rq',name:'Acesso direto',type:'buff',cycles:1600,pace:.25,biomass:30},penalty:{id:'pq',name:'Acesso lento',type:'debuff',cycles:1200,pace:-.4,entropy:6}},
 {id:'a3',cat:'algoritmos',dif:1,stem:'O que diferencia busca binária de linear?',opts:['Binária funciona em qualquer lista','Binária exige lista ordenada e corta o espaço pela metade a cada passo','Linear é sempre mais rápida','Binária usa recursão obrigatoriamente'],cor:1,exp:'Busca binária: compara o meio, descarta metade. Pré-requisito: ordenação. O(log n) vs O(n).',reward:{id:'rq',name:'Exploração inteligente',type:'buff',cycles:1500,food:60,pace:.2},penalty:{id:'pq',name:'Exploração cega',type:'debuff',cycles:1300,food:-40,entropy:5}},
-{id:'a4',cat:'algoritmos',dif:1,stem:'Loop aninhado: N agentes × N agentes. Complexidade?',opts:['O(N)','O(N log N)','O(N²)','O(2N)'],cor:2,exp:'N×N = N² operações. Na v3, nearestExcept() eliminou a alocação dinâmica do .filter() por agente, reduzindo GC pressure. A busca ainda é O(N) por agente; spatial grid é necessário para eliminar o O(N²) de verdade.',reward:{id:'rq',name:'Eficiência recuperada',type:'buff',cycles:2000,pace:.4,biomass:40},penalty:{id:'pq',name:'Custo quadrático',type:'debuff',cycles:1600,pace:-.6,pressure:.15}},
+{id:'a4',cat:'algoritmos',dif:1,stem:'Loop aninhado: N agentes × N agentes. Complexidade?',opts:['O(N)','O(N log N)','O(N²)','O(2N)'],cor:2,exp:'N×N = N² operações. Era exatamente o custo da busca de vizinhos entre agentes neste motor. A v4.7 introduziu um spatial grid: cada agente só varre as células próximas, derrubando o termo O(N²) que crescia com a população.',reward:{id:'rq',name:'Eficiência recuperada',type:'buff',cycles:2000,pace:.4,biomass:40},penalty:{id:'pq',name:'Custo quadrático',type:'debuff',cycles:1600,pace:-.6,pressure:.15}},
 {id:'a5',cat:'algoritmos',dif:2,stem:'Merge sort: complexidade no pior caso?',opts:['O(N)','O(N log N)','O(N²)','O(log N)'],cor:1,exp:'Cada nível tem N elementos, são log N níveis. Total: N log N. Estável e previsível.',reward:{id:'rq',name:'Ordenação eficiente',type:'buff',cycles:2000,insight:12},penalty:{id:'pq',name:'Ordenação ineficiente',type:'debuff',cycles:1800,pressure:.2,entropy:10}},
 {id:'a6',cat:'algoritmos',dif:2,stem:'Recursão sem caso base garante o quê?',opts:['Resultado mais rápido','Economia de memória','Stack overflow — pilha esgota','Paralelismo automático'],cor:2,exp:'Cada chamada empilha um frame. Sem parada, pilha cresce até estourar. JS: RangeError.',reward:{id:'rq',name:'Recursão controlada',type:'buff',cycles:1800,entropy:-10,insight:8},penalty:{id:'pq',name:'Pilha estourada',type:'debuff',cycles:1500,entropy:18,pace:-.3}},
 {id:'a7',cat:'algoritmos',dif:2,stem:'Qual técnica cacheia subproblemas sobrepostos para evitar recomputação?',opts:['Greedy','Backtracking','Programação dinâmica','BFS'],cor:2,exp:'DP usa memoization ou tabulação. Fibonacci com DP: O(N) em vez de O(2^N).',reward:{id:'rq',name:'Memória adaptativa',type:'buff',cycles:2200,mutation:-.02,insight:14},penalty:{id:'pq',name:'Recomputação excessiva',type:'debuff',cycles:1800,pace:-.5,entropy:12}},
@@ -853,7 +893,13 @@ function resumeGame(){running=wasRunning;document.getElementById('btn-pause').te
 /* ═══ PERSISTÊNCIA LEVE ═══ */
 const SAVE_KEY='micromundo_v46';
 const SAVE_KEY_LEGACY='micromundo_v4'; // migra prestige do save anterior
-function saveState(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({upgrades,eventCount:world.eventCount,elapsedMs,remainingEventMs:Math.max(0,world.nextEventMs-elapsedMs),prestige,pendingBiome,onboardingShown:onboarding.shown,firstQuizDone:onboarding.firstQuizDone}));}catch(e){}}
+function saveState(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({schemaVersion:SCHEMA_VERSION,upgrades,eventCount:world.eventCount,elapsedMs,remainingEventMs:Math.max(0,world.nextEventMs-elapsedMs),prestige,pendingBiome,onboardingShown:onboarding.shown,firstQuizDone:onboarding.firstQuizDone}));}catch(e){}}
+// Reseta o save permanente (com confirmação). Recarrega para começar do zero.
+function resetSave(){
+  if(!confirm('Apagar TODO o progresso salvo (prestígio, Memória Evolutiva e upgrades)? Esta ação não pode ser desfeita.'))return;
+  try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem(SAVE_KEY_LEGACY);}catch(e){}
+  location.reload();
+}
 function loadState(){try{
   // Migração v3→v4: aproveitar só prestige e onboarding, descartar estado de run
   if(!localStorage.getItem(SAVE_KEY)&&localStorage.getItem(SAVE_KEY_LEGACY)){
@@ -867,7 +913,12 @@ function loadState(){try{
     }catch(e2){}
     return; // upgrades e estado de run começam do zero na v4
   }
-  const raw=localStorage.getItem(SAVE_KEY);if(!raw)return;const d=JSON.parse(raw);if(d.upgrades)Object.assign(upgrades,d.upgrades);if(d.eventCount)world.eventCount=d.eventCount;if(d.elapsedMs)elapsedMs=d.elapsedMs;if(d.remainingEventMs!==undefined)world.nextEventMs=elapsedMs+d.remainingEventMs;if(d.prestige){Object.assign(prestige,d.prestige);if(!prestige.perms)prestige.perms={};}if(d.pendingBiome)pendingBiome=d.pendingBiome;if(d.onboardingShown)onboarding.shown=d.onboardingShown;if(d.firstQuizDone)onboarding.firstQuizDone=d.firstQuizDone;}catch(e){}}
+  const raw=localStorage.getItem(SAVE_KEY);if(!raw)return;const d=JSON.parse(raw);
+  // Migração de schema: saves sem schemaVersion são v1 (estrutura compatível, carga direta).
+  // Saves de uma versão futura ainda são lidos em best-effort (campos são aditivos).
+  const sv=d.schemaVersion||1;
+  if(sv>SCHEMA_VERSION)console.warn('Save de schema mais novo ('+sv+') que esta versão ('+SCHEMA_VERSION+'). Carregando em modo de compatibilidade.');
+  if(d.upgrades)Object.assign(upgrades,d.upgrades);if(d.eventCount)world.eventCount=d.eventCount;if(d.elapsedMs)elapsedMs=d.elapsedMs;if(d.remainingEventMs!==undefined)world.nextEventMs=elapsedMs+d.remainingEventMs;if(d.prestige){Object.assign(prestige,d.prestige);if(!prestige.perms)prestige.perms={};}if(d.pendingBiome)pendingBiome=d.pendingBiome;if(d.onboardingShown)onboarding.shown=d.onboardingShown;if(d.firstQuizDone)onboarding.firstQuizDone=d.firstQuizDone;}catch(e){}}
 
 /* ═══ UI ═══ */
 const canvas=document.getElementById('world');
@@ -1610,6 +1661,7 @@ document.getElementById('btn-predators').addEventListener('click',()=>{ activate
   document.getElementById('btn-predators').textContent='Predadores: '+(predEnabled?'on':'off');
   logEntry('Predadores '+(predEnabled?'ativados':'removidos'),predEnabled?'Pressão seletiva por fuga e cautela.':'Mundo depende mais de metabolismo.','type-world');
 });
+document.getElementById('btn-reset-save').addEventListener('click',resetSave);
 document.getElementById('btn-rand-event').addEventListener('click',()=>{activateLabMode();triggerEvent(false);});
 document.getElementById('btn-force-quiz').addEventListener('click',()=>{activateLabMode();triggerEvent(true);});
 document.querySelectorAll('.mode').forEach(b=>b.addEventListener('click',()=>reset(b.dataset.mode)));
@@ -1632,6 +1684,9 @@ function loop(ts){
   requestAnimationFrame(loop);
 }
 
+// Versão aplicada a partir da fonte única (corrige inconsistência v3/v4/v4.6)
+document.title='MicroMundo Evolutivo '+VERSION;
+{const _v=document.getElementById('app-version');if(_v)_v.textContent=VERSION;}
 resizeCanvas();reset('balanced');loadState();renderPermUpgrades();updatePrestigeUI();requestAnimationFrame(loop);
 // Splash na primeira abertura (após loadState para saber se já viu)
 if(!onboarding.shown)openSplash();
