@@ -2,7 +2,7 @@
 
 > Idle game de **computação viva**: agentes evoluem por seleção emergente, o ambiente muda sozinho e eventos de raciocínio (quizzes de computação) desafiam o jogador.
 
-**Versão atual:** `v4.7` · arquivo único, sem build, sem dependências.
+**Versão atual:** `v5.0` · arquivo único, sem build, sem dependências.
 
 [▶ Jogar](index.html) — basta abrir o `index.html` em qualquer navegador moderno.
 
@@ -21,11 +21,11 @@ O papel do jogador não é controlar agentes, e sim **mudar as condições do mu
 | **Motor evolutivo** | Grade 100×72. Cada agente tem 6 genes (curiosidade, cautela, sociabilidade, metabolismo, velocidade, memória). Mutação contínua na reprodução. Comida, veneno, rastros químicos e predadores opcionais. |
 | **Economia idle** | 3 recursos de run: **biomassa** (upgrades imediatos), **insight** (upgrades avançados) e **entropia** (parede mecânica — penaliza superpopulação em 3 faixas: 70% / 90% / 100%). |
 | **Prestígio** | Ao *ascender*, a run é apagada e vira **Memória Evolutiva** (ME) — a única moeda permanente. Compra upgrades que persistem e desbloqueia biomas. |
-| **Eventos de raciocínio** | Banco de **46 questões** de computação em 6 categorias. Tipos de evento: `quiz`, `dilemma`, `socrates` e `epic` (raros, quase irreversíveis). Acertos dão buffs; no prestígio 2+ abrem janela de calibração (upgrades de insight 30% mais baratos). |
+| **Eventos de raciocínio** | Banco de **91 questões** de computação em 9 categorias, com **anti-repetição** (não repete questões recentes e favorece categorias menos vistas). Tipos de evento: `quiz`, `dilemma`, `socrates` e `epic` (raros, quase irreversíveis). Acertos dão buffs; no prestígio 2+ abrem janela de calibração (upgrades de insight 30% mais baratos). |
 | **Onboarding** | Splash inicial, quiz tutorial e painel "Motor intuitivo" com manual integrado. |
 
 ### Categorias do banco de questões
-`algoritmos` (11) · `estruturas` (8) · `complexidade` (7) · `genética` (7) · `probabilidade` (7) · `sistemas` (6)
+`algoritmos` (14) · `estruturas` (11) · `complexidade` (10) · `genética` (10) · `probabilidade` (10) · `sistemas` (9) · `o-jogo` (9) · `concorrência` (6) · `redes` (6) · `grafos` (6)
 
 ## Como rodar
 
@@ -47,7 +47,7 @@ O progresso de prestígio é salvo no `localStorage` do navegador.
 
 ```
 .
-├── index.html      # o jogo (versão jogável atual, v4.7)
+├── index.html      # o jogo (versão jogável atual, v5.0)
 ├── README.md       # este arquivo
 ├── ROADMAP.md      # plano de versões futuras
 └── CHANGELOG.md    # histórico de versões

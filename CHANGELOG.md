@@ -3,6 +3,29 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/).
 Este projeto usa versionamento por *milestones* de jogo (não SemVer estrito).
 
+## [v5.0] — 2026-06-26
+
+Versão de conteúdo: foco no motor de questões (o principal eixo de progressão no prestígio 2+).
+
+### Adicionado
+- **Banco de questões ampliado: 55 → 91** (+36). Três categorias novas — **concorrência**,
+  **redes** e **grafos** (6 cada) — além de ampliações em algoritmos, estruturas,
+  complexidade, sistemas, genética e probabilidade. Cada questão mantém o formato
+  (enunciado, 4 opções, explicação, reward/buff e penalty/debuff).
+- **Anti-repetição de quiz**: uma janela das últimas questões servidas nunca repete,
+  e a seleção favorece categorias menos vistas (peso inversamente proporcional à
+  contagem por categoria), preservando o reforço de dificuldade (`hardEventChance`).
+  Cumpre a promessa do manual ("o sistema não rastreia... ainda").
+- Novas categorias adicionadas ao `catMap` da UID do quiz.
+
+### Verificação
+- Parsing estrutural do banco: 91 questões, 0 ids duplicados, todas com 4 opções,
+  `cor` válido e reward/penalty presentes.
+- Anti-repetição: 0 violações de repetição na janela em 300 sorteios; cobertura de
+  88/91 questões e distribuição equilibrada entre categorias.
+- Smoke test no Chromium: jogo carrega, `QUESTIONS.length=91`, quiz abre pelo fluxo
+  real de evento com 4 alternativas, `recentQuizIds` registrando — sem erros de JS.
+
 ## [v4.7] — 2026-06-26
 
 Versão de higiene técnica. Sem features novas de jogo — fundação para o que vem.
@@ -44,5 +67,6 @@ Primeira versão versionada no repositório (upload inicial).
 - Busca de vizinhos é O(n²) por ciclo (`nearest`/`nearestExcept`). *Spatial grid* marcado como pendente no código.
 - Sem fonte única de verdade para a versão (string espalhada no markup).
 
+[v5.0]: https://github.com/Drmcoelho/AgentIdle/releases/tag/v5.0
 [v4.7]: https://github.com/Drmcoelho/AgentIdle/releases/tag/v4.7
 [v4.6]: https://github.com/Drmcoelho/AgentIdle/releases/tag/v4.6

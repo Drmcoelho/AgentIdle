@@ -21,15 +21,21 @@ Pequeno, sem features novas. Prepara o terreno para tudo que vem depois.
 - [x] 🔧 **Versão dos saves.** `schemaVersion` no `localStorage` com migração segura.
 - [x] 🔧 Botão de **reset de save** seguro (com confirmação) para depuração.
 
-## v5.0 — Conteúdo e progressão (minor)
+## v5.0 — Conteúdo do motor de questões (minor) ✅ concluída
 
-Foco em dar mais o que fazer e mais o que aprender.
+Foco no principal eixo de progressão (quiz no prestígio 2+).
 
-- 📚 **Banco de questões 2×.** De 46 para ~90 questões. Novas categorias candidatas:
-  *concorrência*, *redes*, *teoria dos grafos*. Manter o formato (stem, 4 opções,
-  explicação, reward/penalty).
-- 📚 **Anti-repetição.** Não repetir uma questão até esgotar a categoria; leve viés
-  para categorias menos vistas. (O manual já admite que isso "ainda não" existe.)
+- [x] 📚 **Banco de questões 2×.** De 55 para **91** questões. Categorias novas:
+  *concorrência*, *redes* e *grafos*. Formato mantido (stem, 4 opções, explicação,
+  reward/penalty).
+- [x] 📚 **Anti-repetição.** Janela de questões recentes sem repetição + viés para
+  categorias menos vistas, preservando o reforço de dificuldade. Cumpre a promessa
+  do manual ("o sistema não rastreia... ainda").
+
+## v5.1 — Conteúdo de mundo (minor)
+
+O restante do que era v5.0, agora em release próprio.
+
 - 🎮 **Biomas jogáveis de fato.** Hoje `seedBank` cita "Ciclo Ártico" e "Parasitismo".
   Implementar modificadores reais de bioma (spawn de comida, entropia, predadores)
   e telegrafar o efeito na UI ao escolher na ascensão.
