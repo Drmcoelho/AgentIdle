@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Agent Idle — um idle game sobre construir uma frota de agentes de IA que geram compute enquanto você dorme." />
+  <title>Agent Idle ⚙️</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>⚙️ Agent Idle</h1>
+    <div class="resources">
+      <div class="res">
+        <span class="res-icon">🔣</span>
+        <span class="res-amount" id="compute">0</span>
+        <span class="res-label">compute</span>
+        <span class="res-rate" id="computeRate">+0/s</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button id="saveBtn" class="ghost" title="Salvar agora">💾</button>
+      <button id="resetBtn" class="ghost" title="Apagar o save">🗑️</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel clicker-panel">
+      <h2>Núcleo de Compute</h2>
+      <p class="muted">Clique para gerar compute manualmente. Cada clique vale <span id="clickValue">1</span>.</p>
+      <button id="clicker" class="core">
+        <span class="core-glow"></span>
+        <span class="core-label">⚡ Processar</span>
+      </button>
+      <div id="floaters" class="floaters" aria-hidden="true"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Agentes</h2>
+      <p class="muted">Cada agente gera compute automaticamente, para sempre.</p>
+      <ul id="generators" class="generators"></ul>
+    </section>
+
+    <section class="panel">
+      <h2>Upgrades</h2>
+      <p class="muted">Melhorias permanentes. Compre uma vez.</p>
+      <ul id="upgrades" class="upgrades"></ul>
+    </section>
+
+    <section class="panel prestige-panel">
+      <h2>Treinar Modelo ✨</h2>
+      <p class="muted">
+        Reinicie o progresso e converta seu compute acumulado em
+        <strong>insights</strong>. Cada insight dá <span id="prestigeBonus">+2%</span>
+        de produção global, para sempre.
+      </p>
+      <p>Insights atuais: <strong id="insights">0</strong> (bônus: <span id="insightBonus">+0%</span>)</p>
+      <p>Treinar agora renderia: <strong id="prestigeGain">0</strong> insights</p>
+      <button id="prestigeBtn" class="prestige">✨ Treinar Modelo</button>
+    </section>
+  </main>
+
+  <footer class="statusbar">
+    <span id="status">Pronto.</span>
+    <span class="spacer"></span>
+    <span class="muted">Salvo automaticamente · feito com ⚙️ por agentes ociosos</span>
+  </footer>
+
+  <script src="game.js"></script>
+</body>
+</html>
