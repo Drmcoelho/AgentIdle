@@ -1,0 +1,1640 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MicroMundo Evolutivo v3</title>
+<style>
+:root{color-scheme:dark;--bg:#06100d;--panel:#0c1e19;--line:rgba(168,255,210,0.14);--text:#e4fdf2;--muted:#96c8b2;--faint:#5e8a77;--green:#5ee896;--mint:#92ffbf;--cyan:#5dcfff;--yellow:#ffd05c;--red:#ff5f72;--violet:#b08cff;--amber:#ffb347;--shadow:0 16px 48px rgba(0,0,0,0.38);font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{min-height:100vh;background:radial-gradient(ellipse at 12% 8%,rgba(94,232,150,.10) 0%,transparent 40%),radial-gradient(ellipse at 90% 4%,rgba(93,207,255,.08) 0%,transparent 32%),linear-gradient(160deg,#050e0c,#080f0d 55%,#040909);color:var(--text);}
+button,input,select{font:inherit;}
+button{border:1px solid var(--line);border-radius:7px;background:#112a22;color:var(--text);cursor:pointer;min-height:36px;padding:.48rem .68rem;transition:background 120ms,border-color 120ms,transform 80ms;}
+button:hover{background:#183a2e;border-color:rgba(148,255,195,.28);}
+button:active{transform:translateY(1px);}
+button.primary{background:linear-gradient(175deg,#56db8e,#1e9e5f);border-color:rgba(196,255,220,.55);color:#021409;font-weight:800;}
+button:disabled,button[disabled]{opacity:.44;cursor:not-allowed;pointer-events:none;}
+.app{display:grid;grid-template-columns:minmax(620px,1fr) 380px;gap:.9rem;min-height:100vh;padding:.9rem;}
+.world-shell{display:grid;grid-template-rows:auto minmax(440px,1fr) auto;gap:.75rem;min-width:0;}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.8rem 1rem;border:1px solid var(--line);border-radius:8px;background:rgba(12,30,25,.82);backdrop-filter:blur(20px);box-shadow:var(--shadow);}
+.brand h1{font-size:clamp(1.1rem,2vw,1.75rem);letter-spacing:-.02em;}
+.brand p{color:var(--muted);font-size:.82rem;margin-top:.16rem;}
+.ticker{display:grid;grid-template-columns:repeat(4,minmax(86px,1fr));gap:.45rem;min-width:360px;}
+.tick-card{border:1px solid var(--line);border-radius:7px;padding:.5rem .6rem;background:rgba(5,14,11,.78);}
+.tick-card span{display:block;color:var(--faint);font-size:.72rem;}
+.tick-card strong{display:block;font-variant-numeric:tabular-nums;font-size:.98rem;margin-top:.1rem;}
+.canvas-wrap{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:8px;background:#050e0b;box-shadow:var(--shadow);min-height:460px;}
+canvas{display:block;width:100%;height:100%;image-rendering:pixelated;}
+.legend{position:absolute;left:.7rem;bottom:.7rem;display:flex;flex-wrap:wrap;gap:.4rem;pointer-events:none;}
+.chip{display:inline-flex;align-items:center;gap:.32rem;border:1px solid var(--line);border-radius:999px;background:rgba(2,10,8,.74);padding:.28rem .44rem;color:var(--muted);font-size:.76rem;backdrop-filter:blur(10px);}
+.dot{width:.55rem;height:.55rem;border-radius:999px;display:inline-block;}
+.bottom{display:grid;grid-template-columns:1.1fr .9fr;gap:.75rem;}
+.panel{border:1px solid var(--line);border-radius:8px;background:rgba(12,30,25,.88);box-shadow:var(--shadow);min-width:0;}
+.panel-header{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.72rem .85rem;border-bottom:1px solid var(--line);}
+.panel-header h2{font-size:.92rem;}
+.panel-body{padding:.8rem .85rem;}
+.controls{display:grid;gap:.65rem;}
+.btn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.45rem;}
+.resource-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:.48rem;}
+.resource{border:1px solid var(--line);border-radius:7px;background:rgba(5,14,11,.7);padding:.56rem;}
+.resource span{display:block;color:var(--faint);font-size:.7rem;}
+.resource strong{display:block;color:var(--mint);font-size:.96rem;font-variant-numeric:tabular-nums;margin-top:.12rem;}
+.world-state{display:grid;grid-template-columns:repeat(4,1fr);gap:.48rem;}
+.active-effects{display:grid;gap:.38rem;}
+.effect{display:flex;align-items:center;justify-content:space-between;gap:.5rem;border:1px solid var(--line);border-radius:7px;background:rgba(2,10,8,.6);padding:.44rem .52rem;color:var(--muted);font-size:.76rem;}
+.effect strong{color:var(--text);font-size:.8rem;}
+.effect.buff{border-left:3px solid var(--green);}
+.effect.debuff{border-left:3px solid var(--red);}
+.effect.neutral{border-left:3px solid var(--cyan);}
+.effect.epic{border-left:3px solid var(--violet);}
+.effect-timer{color:var(--faint);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.upgrade-list{display:grid;gap:.45rem;}
+.upgrade{display:grid;grid-template-columns:1fr auto;gap:.55rem;align-items:center;text-align:left;min-height:68px;padding:.56rem .62rem;}
+.upgrade strong{display:block;font-size:.86rem;}
+.upgrade span{display:block;color:var(--muted);font-size:.72rem;margin-top:.08rem;}
+.upgrade em{display:block;color:var(--yellow);font-style:normal;font-size:.72rem;margin-top:.18rem;}
+.upgrade[disabled]{opacity:.46;cursor:not-allowed;}
+.level-pill{display:inline-flex;align-items:center;justify-content:center;min-width:2.2rem;min-height:2.2rem;border-radius:999px;background:rgba(146,255,191,.1);color:var(--mint);border:1px solid var(--line);font-weight:900;font-size:.88rem;}
+.side{display:grid;grid-template-rows:auto auto minmax(160px,1fr);gap:.75rem;min-width:0;}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.48rem;}
+.stat{border:1px solid var(--line);border-radius:7px;background:rgba(5,14,11,.6);padding:.58rem;}
+.stat span{display:block;color:var(--faint);font-size:.72rem;}
+.stat strong{display:block;font-size:1rem;font-variant-numeric:tabular-nums;margin-top:.14rem;}
+.chart{width:100%;height:110px;border:1px solid var(--line);border-radius:7px;background:rgba(2,10,8,.72);}
+.agent-card{display:grid;gap:.5rem;}
+.gene{display:grid;grid-template-columns:5.8rem 1fr 2.8rem;gap:.5rem;align-items:center;color:var(--muted);font-size:.8rem;}
+.bar{height:.44rem;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;}
+.bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--cyan),var(--green));}
+.log{display:grid;gap:.42rem;max-height:260px;overflow-y:auto;padding-right:.2rem;}
+.log-entry{border-left:3px solid var(--green);background:rgba(2,10,8,.58);padding:.44rem .5rem;border-radius:5px;color:var(--muted);font-size:.79rem;line-height:1.35;}
+.log-entry.type-epic{border-left-color:var(--violet);}
+.log-entry.type-dilemma{border-left-color:var(--amber);}
+.log-entry.type-socrates{border-left-color:var(--violet);}
+.log-entry.type-warn{border-left-color:var(--red);}
+.log-entry strong{color:var(--text);font-weight:700;}
+details{border-top:1px solid var(--line);padding:.66rem .85rem;}
+details:first-of-type{border-top:0;}
+summary{cursor:pointer;color:var(--mint);font-weight:700;font-size:.88rem;}
+details p,details li{color:var(--muted);line-height:1.44;font-size:.83rem;}
+details ul{margin:.5rem 0 0;padding-left:1rem;}
+details p{margin-top:.5rem;}
+.mode-list{display:grid;grid-template-columns:repeat(2,1fr);gap:.45rem;}
+.mode{text-align:left;min-height:64px;}
+.mode strong{display:block;}
+.mode span{display:block;color:var(--muted);font-size:.74rem;margin-top:.1rem;}
+.mini{color:var(--muted);font-size:.8rem;line-height:1.34;}
+.quiz-timer-bar{height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden;}
+.quiz-timer-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--cyan),var(--green));transition:width .5s linear;}
+.modal-backdrop{position:fixed;inset:0;display:none;place-items:center;padding:1rem;background:rgba(1,6,5,.82);z-index:20;}
+.modal-backdrop.open{display:grid;}
+.modal{width:min(720px,100%);border-radius:9px;background:#0a1e18;box-shadow:0 28px 100px rgba(0,0,0,.65);overflow:hidden;}
+.modal.quiz-modal{border:1px solid rgba(94,232,150,.30);}
+.modal.dilemma-modal{border:1px solid rgba(255,179,71,.35);}
+.modal.socrates-modal{border:1px solid rgba(176,140,255,.35);}
+.modal.epic-modal{border:1px solid rgba(255,95,114,.38);}
+.modal-header{padding:.88rem 1rem;border-bottom:1px solid var(--line);}
+.modal-header h2{font-size:1rem;}
+.modal-type-label{display:inline-block;margin-top:.28rem;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.18rem .5rem;border-radius:4px;background:rgba(255,255,255,.07);}
+.modal-type-label.quiz{color:var(--green);}
+.modal-type-label.dilemma{color:var(--amber);}
+.modal-type-label.socrates{color:var(--violet);}
+.modal-type-label.epic{color:var(--red);}
+.modal-body{display:grid;gap:.7rem;padding:1rem;}
+.modal-question{line-height:1.5;font-size:.96rem;}
+.modal-choices{display:grid;gap:.48rem;}
+.modal-choice{text-align:left;min-height:44px;padding:.6rem .72rem;line-height:1.38;font-size:.88rem;}
+.modal-choice.correct{background:rgba(94,232,150,.14);border-color:var(--green);color:var(--mint);}
+.modal-choice.wrong{background:rgba(255,95,114,.12);border-color:var(--red);color:var(--red);}
+.modal-explanation{background:rgba(5,14,11,.7);border:1px solid var(--line);border-radius:7px;padding:.7rem .8rem;color:var(--muted);font-size:.84rem;line-height:1.44;}
+.modal-effect-label{font-size:.8rem;padding:.42rem .6rem;border-radius:6px;border:1px solid var(--line);}
+.modal-effect-label.buff{color:var(--green);background:rgba(94,232,150,.08);}
+.modal-effect-label.debuff{color:var(--red);background:rgba(255,95,114,.08);}
+.modal-effect-label.choice{color:var(--amber);background:rgba(255,179,71,.08);}
+.modal-effect-label.epic{color:var(--violet);background:rgba(176,140,255,.08);}
+.modal-continue{margin-top:.3rem;background:linear-gradient(175deg,#56db8e,#1e9e5f);border-color:rgba(196,255,220,.55);color:#021409;font-weight:800;width:100%;min-height:42px;}
+.toast-wrap{position:fixed;bottom:1.2rem;right:1.2rem;display:grid;gap:.5rem;z-index:30;pointer-events:none;}
+.toast{border:1px solid var(--line);border-radius:8px;background:rgba(12,30,25,.94);backdrop-filter:blur(16px);padding:.7rem .9rem;max-width:300px;font-size:.82rem;color:var(--muted);animation:slideIn .3s ease,fadeOut .4s 3.8s ease forwards;pointer-events:none;}
+.toast strong{display:block;color:var(--mint);margin-bottom:.18rem;}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0;}to{transform:none;opacity:1;}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(30%);}}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(148,255,195,.18);border-radius:2px;}
+@media(max-width:1100px){.app{grid-template-columns:1fr;}.ticker{min-width:0;grid-template-columns:repeat(2,1fr);}.topbar{flex-direction:column;align-items:flex-start;}}
+@media(max-width:700px){.app{padding:.6rem;}.canvas-wrap{min-height:380px;}.bottom{grid-template-columns:1fr;}.btn-grid,.mode-list{grid-template-columns:1fr 1fr;}.stats-grid,.resource-strip,.world-state{grid-template-columns:1fr 1fr;}}
+
+    /* Prestige panel */
+    #god-tools>summary { list-style:none; }
+    #god-tools>summary::-webkit-details-marker { display:none; }
+    #god-tools[open]>summary { margin-bottom:.1rem; }
+    .perm-badge { display:inline-flex;align-items:center;justify-content:center;min-width:2.2rem;min-height:2.2rem;border-radius:999px;background:rgba(176,140,255,.1);color:var(--violet);border:1px solid rgba(176,140,255,.28);font-weight:900;font-size:.88rem; }
+</style>
+</head>
+<body>
+<main class="app">
+<section class="world-shell">
+<header class="topbar">
+<div class="brand"><h1>MicroMundo Evolutivo <small style="font-size:.55em;color:var(--faint);font-weight:400">v4</small> <span id="prestige-level" style="font-size:.5em;color:var(--violet);font-weight:700"></span><span id="prestige-diff" style="font-size:.45em;color:var(--faint);font-weight:400;margin-left:.3em"></span></h1><p>Idle game de computação viva — agentes evoluem, o ambiente muda sozinho, eventos desafiam seu raciocínio.</p></div>
+<div class="ticker">
+<div class="tick-card"><span>ciclo</span><strong id="tc-cycle">0</strong></div>
+<div class="tick-card"><span>população</span><strong id="tc-pop">0</strong></div>
+<div class="tick-card"><span>energia média</span><strong id="tc-energy">0</strong></div>
+<div class="tick-card"><span>diversidade</span><strong id="tc-div">0</strong></div>
+</div></header>
+<section class="canvas-wrap">
+<canvas id="world" aria-label="Simulação"></canvas>
+<div class="legend">
+<span class="chip"><i class="dot" style="background:var(--green)"></i>agente</span>
+<span class="chip"><i class="dot" style="background:var(--yellow)"></i>comida</span>
+<span class="chip"><i class="dot" style="background:var(--red)"></i>veneno</span>
+<span class="chip"><i class="dot" style="background:var(--cyan)"></i>rastro</span>
+<span class="chip"><i class="dot" style="background:var(--violet)"></i>predador</span>
+</div></section>
+<section class="bottom">
+<div class="panel"><div class="panel-header"><h2>Controle <span id="lab-badge" style="display:none;font-size:.7rem;font-weight:900;color:var(--amber);background:rgba(255,179,71,.12);border:1px solid var(--amber);border-radius:4px;padding:.1rem .4rem;letter-spacing:.06em">[LAB]</span></h2><div style="display:flex;gap:.4rem;align-items:center"><button id="btn-ascend" class="primary" style="background:linear-gradient(175deg,#9b6fff,#6b3fd4);border-color:rgba(176,140,255,.5);color:#fff;font-size:.82rem" title="Apaga o mundo atual. Preserva compreensão em forma de Memória Evolutiva.">⬆ Ascender</button><button id="btn-pause" class="primary">Pausar</button></div></div>
+<div class="panel-body controls">
+<details id="god-tools" style="border:0;padding:0"><summary style="cursor:pointer;color:var(--amber);font-weight:700;font-size:.82rem;padding:.4rem 0">⚗ Ferramentas de Deus <span style="color:var(--faint);font-weight:400;font-size:.75rem">(ativa modo laboratório)</span></summary><div style="display:grid;gap:.5rem;margin-top:.5rem"><div class="btn-grid"><button id="btn-step">1 ciclo</button><button id="btn-reset">Nova run</button><button id="btn-catastrophe">Catástrofe</button><button id="btn-food">Chuva de comida</button><button id="btn-agents">Criar agentes</button><button id="btn-predators">Predadores: off</button></div><div class="btn-grid" style="grid-template-columns:1fr 1fr"><button id="btn-rand-event">Evento aleatório</button><button id="btn-force-quiz">Forçar quiz</button></div></div></details>
+<div class="resource-strip"><div class="resource"><span>biomassa</span><strong id="r-biomass">0</strong></div><div class="resource"><span>insight</span><strong id="r-insight">0</strong></div><div class="resource"><span>entropia</span><strong id="r-entropy">0%</strong></div><div class="resource"><span>capacidade</span><strong id="r-capacity">0</strong></div></div>
+<div class="world-state"><div class="resource"><span>ritmo</span><strong id="ws-pace">2.0x</strong></div><div class="resource"><span>mutação</span><strong id="ws-mut">7%</strong></div><div class="resource"><span>pressão</span><strong id="ws-pres">1.00</strong></div><div class="resource"><span>próx. evento</span><strong id="ws-timer">--:--</strong></div></div>
+<div class="active-effects" id="effects-panel"><div class="effect neutral"><strong>sem efeito ativo</strong><span class="effect-timer">mundo basal</span></div></div>
+</div></div>
+<div class="panel"><div class="panel-header"><h2>Upgrades</h2></div><div class="panel-body"><div class="upgrade-list" id="upgrades-list"></div><p class="mini" style="margin-top:.7rem">Biomassa: geração lenta — cada upgrade é uma decisão. Insight: passivo é escasso; quiz correto vale +35. Entropia: superpopulação reduz tudo.</p></div></div>
+<div class="panel" style="grid-column:1/-1"><div class="panel-header"><h2>Memória Evolutiva</h2><span id="prestige-memoria" style="font-size:1.1rem;font-weight:900;color:var(--violet)">0 ME</span></div><div class="panel-body">
+          <div class="resource-strip" style="margin-bottom:.65rem">
+            <div class="resource"><span>runs completadas</span><strong id="prestige-runs" style="color:var(--violet)">0</strong></div>
+            <div class="resource"><span>melhor run</span><strong id="prestige-best" style="color:var(--violet)">0 ME</strong></div>
+            <div class="resource"><span>prévia ascensão</span><strong id="prestige-preview">-- ME</strong></div>
+            <div class="resource"><span>bioma próx. run</span><strong id="prestige-biome" style="color:var(--cyan)">Equilíbrio</strong></div>
+            <div class="resource" style="grid-column:1/-1"><span>herança ativa</span><strong id="active-heritage-label" style="color:var(--violet);font-size:.82rem">—</strong></div>
+          </div>
+          <div class="upgrade-list" id="perm-upgrades-list"></div>
+          <p class="mini" style="margin-top:.65rem;color:var(--faint)">Clique num agente para inspecionar · vazio → comida · Shift → veneno · Bioma escolhido na ascensão</p>
+        </div></div>
+</section></section>
+<aside class="side">
+<section class="panel"><div class="panel-header"><h2>Telemetria</h2><span class="mini" id="state-label">rodando</span></div><div class="panel-body"><div class="stats-grid"><div class="stat"><span>nascimentos</span><strong id="s-births">0</strong></div><div class="stat"><span>mortes</span><strong id="s-deaths">0</strong></div><div class="stat"><span>idade média</span><strong id="s-age">0</strong></div><div class="stat"><span>comida</span><strong id="s-food">0</strong></div><div class="stat"><span>veneno</span><strong id="s-poison">0</strong></div><div class="stat"><span>predadores</span><strong id="s-pred">0</strong></div></div><canvas id="chart" class="chart" width="340" height="110"></canvas></div></section>
+<section class="panel"><div class="panel-header"><h2>Agente selecionado</h2><span class="mini" id="agent-id">nenhum</span></div><div class="panel-body agent-card" id="agent-panel"><p class="mini">Clique num agente verde para inspecionar genes.</p></div></section>
+<section class="panel"><div class="panel-header"><h2>Motor intuitivo</h2></div>
+      <details open>
+        <summary>Primeira vez aqui?</summary>
+        <div style="display:grid;gap:.5rem;padding-top:.4rem">
+          <p class="mini">As bolinhas verdes são agentes com genes, energia e comportamento próprio. Eles não recebem ordens — agem por percepção local.</p>
+          <p class="mini">Quando um agente se reproduz, o filho herda genes parecidos com pequenas variações. Genes que funcionam bem neste ambiente se espalham. Isso é evolução emergente.</p>
+          <p class="mini"><strong style="color:var(--mint)">Seu papel:</strong> comprar upgrades, responder eventos e decidir quando ascender. Você muda as condições — o mundo decide o resto.</p>
+          <button onclick="openSplash()" style="font-size:.76rem;min-height:28px;padding:.3rem .6rem;margin-top:.2rem">Ver explicação completa</button>
+        </div>
+      </details>
+      <details>
+        <summary>Como jogar</summary>
+        <div style="display:grid;gap:.42rem;padding-top:.4rem">
+          <p class="mini"><strong style="color:var(--mint)">Biomassa</strong> — compra upgrades imediatos. Reseta ao ascender.</p>
+          <p class="mini"><strong style="color:var(--mint)">Insight</strong> — compra upgrades avançados da run. Também reseta.</p>
+          <p class="mini"><strong style="color:var(--violet)">Memória Evolutiva</strong> — a única moeda permanente. Gerada ao ascender. Compra vantagens que persistem.</p>
+          <p class="mini"><strong style="color:var(--red)">Entropia</strong> — tem três faixas reais. Acima de 70%: reprodução fica mais cara. Acima de 90%: crescimento limpo acaba. Em 100%: modo crítico — sobrevivência ainda possível, expansão não.</p>
+          <p class="mini" style="margin-top:.2rem">Nos primeiros prestígios, errar um quiz perde o bônus mas o castigo é suave. No prestígio 2+, erros acumulam pressão: eventos chegam mais rápido e o mundo fica mais hostil.</p>
+          <p class="mini">No prestígio 2+, acertar um quiz abre uma <strong style="color:var(--green)">janela de calibração</strong>: upgrades de insight ficam 30% mais baratos por 400 ciclos. O quiz deixa de ser bônus e vira o principal motor de progressão.</p>
+          <p class="mini">Eventos épicos são raros e quase irreversíveis. Existem na v4.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Manual do motor</summary>
+        <div style="display:grid;gap:.42rem;padding-top:.4rem">
+          <p class="mini">Grade de 100×72 células. Cada agente carrega 6 genes: <em>curiosidade, cautela, sociabilidade, metabolismo, velocidade, memória</em>. São números contínuos — não rótulos.</p>
+          <p class="mini">Curiosidade define raio de detecção de comida. Cautela define repulsão de veneno e fuga de predadores. Sociabilidade define atração ou repulsão de vizinhos. Metabolismo define custo energético de existir. Velocidade define o quanto o agente pode se mover. Memória define quanto o agente segue rastros químicos próprios.</p>
+          <p class="mini">A reprodução gera mutação contínua. Com probabilidade <em>mutationRate</em> (≈7%), o drift é grande. O restante é pequeno. Seleção opera sobre o conjunto — não há fitness explícito calculado.</p>
+          <p class="mini">Ritmo, mutação e pressão são forças do ambiente. Derivam aleatoriamente a cada 1500 ciclos e são alterados por eventos. Você não os controla diretamente.</p>
+          <p class="mini">Cada prestígio aumenta dificuldade: comida spawna menos, entropia cresce mais, eventos têm mais pressão, questões difíceis aparecem desde cedo.</p>
+          <p class="mini" style="color:var(--faint);margin-top:.3rem">O sistema não rastreia suas categorias fracas de quiz — ainda. O que parece perseguição é a combinação de dificuldade crescente com as marcas que suas decisões deixaram no mundo.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Log de eventos</summary>
+        <div class="log" id="log"></div>
+      </details>
+      </section>
+</aside>
+</main>
+<div class="modal-backdrop" id="modal-backdrop" aria-hidden="true"><div class="modal" id="modal-box" role="dialog" aria-modal="true"><div class="modal-header"><h2 id="modal-title">Evento</h2><span class="modal-type-label" id="modal-type-label">quiz</span></div><div class="modal-body" id="modal-body"></div></div></div>
+<div class="toast-wrap" id="toast-wrap"></div><script>
+/* ═══ CONFIG ═══ */
+const CFG={W:100,H:72,MAX_AGENTS:640,AGENT_MAX_AGE:3600,MAX_FOOD:520,MAX_POISON:260,FOOD_ENERGY_BASE:34,POISON_DAMAGE:28,TRAIL_DECAY:0.965,REPRO_BASE:126,REPRO_COST_FRAC:0.52,REPRO_LOGISTIC_EXP:2.25,REPRO_CROWDING_THRESH:0.38,BIOMASS_PER_AGENT:0.0010,BIOMASS_RECYCLER_BONUS:0.00020,BIOMASS_FOOD_PASSIVE:0.00008,RECYCLER_GAIN_BASE:0.35,INSIGHT_PER_BIRTH:0.018,INSIGHT_DIV_FACTOR:0.005,INSIGHT_POP_FACTOR:0.00006,ENTROPY_RELIEF_BASE:0.035,ENTROPY_CROWDING_MULT:0.18,ENTROPY_POP_PASSIVE:0.00008,ENTROPY_CAP:100,CROWDING_THRESH:0.52,DRIFT_INTERVAL:1500,PACE_BASE:2,PACE_MIN:0.45,PACE_MAX:8,MUTATION_BASE:0.07,MUTATION_MIN:0.005,MUTATION_MAX:0.28,PRESSURE_BASE:1.0,PRESSURE_MIN:0.55,PRESSURE_MAX:2.35,PRESSURE_ENTROPY_CAP:3.2,EVENT_INTERVAL_MS:2*60*60*1000,
+  FIRST_EVENT_MS:10*60*1000,
+  QUIZ_TIMER_SEC:45,UP_INCUBATOR_FOOD:3.2,UP_INCUBATOR_SPAWN:0.07,UP_LOGISTICS_CAP:44,UP_MITOSIS_ENERGY:7.2,UP_RECYCLER_GAIN:0.30,UP_STABILIZER_RELIEF:0.012,UP_STABILIZER_ENTROPY:18,UP_LAB_INSIGHT:0.22};
+
+/* ═══ ESTADO ═══ */
+let running=true,cycle=0,nextId=1,births=0,deaths=0,predEnabled=false,selectedId=null,cycleAcc=0,elapsedMs=0,lastFrameTs=0;
+let agents=[],foods=[],poisons=[],predators=[],trails=new Float32Array(CFG.W*CFG.H),history=[];
+let idle={biomass:80,insight:0,entropy:0};
+let world={pace:CFG.PACE_BASE,mutationRate:CFG.MUTATION_BASE,pressure:CFG.PRESSURE_BASE,eventCount:0,nextEventMs:CFG.EVENT_INTERVAL_MS};
+let effects=[],modalOpen=false;
+// Upgrades da run — resetam ao ascender se custo=biomass
+let upgrades={incubator:0,mitosis:0,logistics:0,recycler:0,stabilizer:0,lab:0};
+// Estado de run para cálculo de prestígio
+let runStats={maxPop:0,maxDiversity:0,nearExtinct:false,entropyHighCycles:0,quizCorrect:0,quizWrong:0,quizTotal:0,catastropheCount:0,seedAgentCount:0,startCycle:0,eventsResolved:0,labMode:false};
+// Prestige — persiste entre runs
+let prestige={memoria:0,runCount:0,bestMemoria:0,
+  perms:{heritageBonus:0,collectiveMemory:0,directedMutation:0,resilientEco:0,seedBank:0,permLab:0},
+  activeHeritage:null};
+// Bioma escolhido para a próxima run (bloqueado durante a run)
+let pendingBiome='balanced';
+// Janela de custo reduzido pós-quiz correto
+let quizUpgradeWindow=0; // ciclos restantes com desconto de upgrade
+const QUIZ_WINDOW_CYCLES=400;
+const QUIZ_WINDOW_DISCOUNT=0.70; // 30% de desconto
+
+// Onboarding
+let onboarding={
+  shown:false,        // splash inicial já foi exibido
+  firstQuizDone:false,// quiz tutorial obrigatório já aconteceu
+  firstEventMs:CFG.FIRST_EVENT_MS, // quando disparar o primeiro quiz
+};
+
+/* ═══ MOTOR — alocação O(n) corrigida; spatial grid pendente para v4 ═══ */
+const rand=(a,b)=>a+Math.random()*(b-a);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const wrap=(v,m)=>((v%m)+m)%m;
+const dist2=(a,b)=>{const dx=a.x-b.x,dy=a.y-b.y;return dx*dx+dy*dy;};
+
+function makeGene(){const cm=(prestige&&prestige.perms.collectiveMemory||0)*0.15;return{curiosity:rand(.15,1),caution:rand(.05,1),social:rand(-.6,.9),metabolism:rand(.65,1.45),speed:rand(.55,1.55),memory:Math.min(1,rand(.05,1)+cm)};}
+function mutateGene(p){const g={},mr=effectiveMutation();for(const k of Object.keys(p)){const d=Math.random()<mr?rand(-.22,.22):rand(-.035,.035),mn=k==='social'?-1:.03,mx=(k==='metabolism'||k==='speed')?1.8:1.2;g[k]=clamp(p[k]+d,mn,mx);}return g;}
+function makeAgent(x,y,pg){const a={id:nextId++,x:x??rand(0,CFG.W),y:y??rand(0,CFG.H),vx:rand(-.4,.4),vy:rand(-.4,.4),energy:rand(52,96),age:0,children:0,lastMeal:0,g:pg?mutateGene(pg):makeGene(),lineageId:0};if(!pg)a.lineageId=a.id;return a;}
+function makePredator(){return{x:rand(0,CFG.W),y:rand(0,CFG.H),vx:0,vy:0,energy:140};}
+function scatter(list,n,lMin=200,lMax=900){for(let i=0;i<n;i++)list.push({x:rand(0,CFG.W),y:rand(0,CFG.H),life:rand(lMin,lMax)});}
+
+function nearestExcept(list,excId,x,y,r2){let best=null,bd=r2;for(const it of list){if(it.id===excId)continue;const d=dist2(it,{x,y});if(d<bd){bd=d;best=it;}}return best;}
+function nearest(list,x,y,r2){let best=null,bd=r2;for(const it of list){const d=dist2(it,{x,y});if(d<bd){bd=d;best=it;}}return best;}
+function localTrail(x,y){const ix=Math.floor(wrap(x,CFG.W)),iy=Math.floor(wrap(y,CFG.H));return trails[iy*CFG.W+ix]||0;}
+
+function moveAgent(a){
+  const g=a.g;
+  const food=nearest(foods,a.x,a.y,(16+g.curiosity*18)**2);
+  const poison=nearest(poisons,a.x,a.y,(9+g.caution*18)**2);
+  const threat=nearest(predators,a.x,a.y,400);
+  const friend=nearestExcept(agents,a.id,a.x,a.y,81);
+  let ax=rand(-.14,.14)*g.curiosity,ay=rand(-.14,.14)*g.curiosity;
+  if(food){const dx=food.x-a.x,dy=food.y-a.y,m=Math.hypot(dx,dy)||1;ax+=(dx/m)*(.11+g.curiosity*.18);ay+=(dy/m)*(.11+g.curiosity*.18);}
+  if(poison){const dx=poison.x-a.x,dy=poison.y-a.y,m=Math.hypot(dx,dy)||1;ax-=(dx/m)*g.caution*.36;ay-=(dy/m)*g.caution*.36;}
+  if(threat){const dx=threat.x-a.x,dy=threat.y-a.y,m=Math.hypot(dx,dy)||1;ax-=(dx/m)*(.6+g.caution*.5);ay-=(dy/m)*(.6+g.caution*.5);}
+  if(friend){const dx=friend.x-a.x,dy=friend.y-a.y,m=Math.hypot(dx,dy)||1;ax+=(dx/m)*g.social*.08;ay+=(dy/m)*g.social*.08;}
+  const tr=localTrail(a.x+a.vx*2,a.y+a.vy*2);
+  ax+=a.vx*tr*g.memory*.003;ay+=a.vy*tr*g.memory*.003;
+  a.vx=clamp((a.vx+ax)*.86,-g.speed,g.speed);a.vy=clamp((a.vy+ay)*.86,-g.speed,g.speed);
+  a.x=wrap(a.x+a.vx,CFG.W);a.y=wrap(a.y+a.vy,CFG.H);a.age++;
+  const _pdM=prestigeDiff();
+  const _eStress=entropyStress();
+  const pCap=clamp(effectivePressure()*entropyDrag()*_pdM.pressureMul,.2,CFG.PRESSURE_ENTROPY_CAP);
+  a.energy-=(.08+g.metabolism*.1+Math.hypot(a.vx,a.vy)*.04+_eStress.extraDrain)*pCap;
+  const idx=Math.floor(a.y)*CFG.W+Math.floor(a.x);
+  trails[idx]=Math.min(255,trails[idx]+10+g.memory*16);
+}
+function consumeAgent(a){
+  for(let i=foods.length-1;i>=0;i--){if(dist2(a,foods[i])<1.4){foods.splice(i,1);a.energy=Math.min(210,a.energy+foodEnergy());a.lastMeal=cycle;break;}}
+  for(let i=poisons.length-1;i>=0;i--){if(dist2(a,poisons[i])<1.15){poisons.splice(i,1);a.energy-=CFG.POISON_DAMAGE*(1.25-Math.min(1,a.g.caution));break;}}
+}
+
+/* ═══ ENTROPIA COMO PAREDE MECÂNICA ═══ */
+function entropyStress(){
+  const e=idle.entropy;
+  const stab=1/(1+upgrades.stabilizer*0.055);
+  if(e>=99.5)return{tier:'critical', reproMul:1+0.65*stab, foodMul:0.22, insightMul:0.15, extraDrain:0.055*stab};
+  if(e>=90)  return{tier:'danger',   reproMul:1+0.40*stab, foodMul:0.70, insightMul:0.75, extraDrain:0.018*stab};
+  if(e>=70)  return{tier:'warning',  reproMul:1+0.20*stab, foodMul:0.85, insightMul:1.0,  extraDrain:0};
+  return              {tier:'stable',  reproMul:1,           foodMul:1,    insightMul:1.0,  extraDrain:0};
+}
+
+function reproduceAgent(a,nb){
+  const cap=carryingCapacity(),crowd=(agents.length+nb.length)/Math.max(1,cap);
+  const lw=Math.pow(Math.max(0,crowd-CFG.REPRO_CROWDING_THRESH),CFG.REPRO_LOGISTIC_EXP)*165;
+  const ew=idle.entropy*(.32-upgrades.stabilizer*CFG.UP_STABILIZER_RELIEF);
+  const _pdR=prestigeDiff();
+  const _stress=entropyStress();
+  const thresh=(CFG.REPRO_BASE+a.g.metabolism*18-upgrades.mitosis*CFG.UP_MITOSIS_ENERGY+lw+ew)*_pdR.reproCostMul*_stress.reproMul;
+  if(a.energy>thresh&&agents.length+nb.length<Math.min(CFG.MAX_AGENTS,cap*1.22)){
+    a.energy*=CFG.REPRO_COST_FRAC;a.children++;births++;
+    const child=makeAgent(wrap(a.x+rand(-2,2),CFG.W),wrap(a.y+rand(-2,2),CFG.H),a.g);
+    child.lineageId=a.lineageId;nb.push(child);
+  }
+}
+function movePredators(){
+  for(const p of predators){
+    const t=nearest(agents,p.x,p.y,576);let ax=rand(-.04,.04),ay=rand(-.04,.04);
+    if(t){const dx=t.x-p.x,dy=t.y-p.y,m=Math.hypot(dx,dy)||1;ax+=dx/m*.23;ay+=dy/m*.23;}
+    p.vx=clamp((p.vx+ax)*.9,-1.05,1.05);p.vy=clamp((p.vy+ay)*.9,-1.05,1.05);
+    p.x=wrap(p.x+p.vx,CFG.W);p.y=wrap(p.y+p.vy,CFG.H);
+    for(let i=agents.length-1;i>=0;i--){if(dist2(p,agents[i])<1.4){if(agents[i].id===selectedId)selectedId=null;agents.splice(i,1);deaths++;p.energy+=18;break;}}
+  }
+}
+function simStep(){
+  cycle++;
+  const _pd=prestigeDiff();
+  const _fStress=entropyStress();
+  const fS=clamp((.58+upgrades.incubator*CFG.UP_INCUBATOR_SPAWN-idle.entropy*.002)*_pd.foodSpawnMul*_fStress.foodMul,.05,1.65);
+  const pS=clamp(.09+idle.entropy*.0022-upgrades.stabilizer*.004,.02,.42);
+  if(Math.random()<fS&&foods.length<CFG.MAX_FOOD)scatter(foods,1+(Math.random()<upgrades.incubator*.035?1:0));
+  if(Math.random()<pS&&poisons.length<CFG.MAX_POISON)scatter(poisons,1);
+  if(predEnabled&&predators.length<7&&cycle%900===0)predators.push(makePredator());
+  for(let i=0;i<trails.length;i++)trails[i]*=CFG.TRAIL_DECAY;
+  worldDrift();
+  const nb=[];
+  for(const a of agents){moveAgent(a);consumeAgent(a);reproduceAgent(a,nb);}
+  agents=agents.concat(nb);movePredators();
+  const before=agents.length;
+  agents=agents.filter(a=>{const ok=a.energy>0&&a.age<CFG.AGENT_MAX_AGE;if(!ok&&a.id===selectedId)selectedId=null;return ok;});
+  const died=before-agents.length;deaths+=died;
+  idleStep(nb.length,died);tickEffects();
+  for(const f of foods)f.life--;for(const p of poisons)p.life--;
+  foods=foods.filter(f=>f.life>0);poisons=poisons.filter(p=>p.life>0);
+  if(agents.length===0){logEntry('Extinção total','Ambiente exigente demais. Reinicie ou crie agentes.','type-warn');running=false;document.getElementById('btn-pause').textContent='Rodar';}
+  trackRunStats();
+  if(quizUpgradeWindow>0)quizUpgradeWindow--;
+  if(cycle%120===0){const d=diversity();history.push({p:agents.length,d});if(history.length>96)history.shift();
+    if(agents.length>260)logEntry('Superpopulação','Entropia vai cobrar.','type-warn');
+    if(d<18&&agents.length>30)logEntry('Gargalo genético','Poucas linhagens dominam.','type-warn');}
+}
+
+/* ═══ ECONOMIA ═══ */
+function carryingCapacity(){return Math.max(60,210+upgrades.logistics*CFG.UP_LOGISTICS_CAP+effectSum('capacity')+Math.floor(Math.sqrt(Math.max(0,idle.biomass))*.9));}
+function foodEnergy(){const mul=effects.reduce((m,e)=>m*(e.foodEnergyMul||1),1);return(CFG.FOOD_ENERGY_BASE+upgrades.incubator*CFG.UP_INCUBATOR_FOOD)*mul;}
+function entropyDrag(){return 1+Math.max(0,idle.entropy)/(125+upgrades.stabilizer*CFG.UP_STABILIZER_ENTROPY);}
+function idleStep(nb,died){
+  const pop=agents.length,cap=carryingCapacity(),crowd=pop/Math.max(1,cap);
+  const labMul=1+upgrades.lab*CFG.UP_LAB_INSIGHT;
+  const recycG=died*(CFG.RECYCLER_GAIN_BASE+upgrades.recycler*CFG.UP_RECYCLER_GAIN);
+  const passB=pop*(CFG.BIOMASS_PER_AGENT+upgrades.recycler*CFG.BIOMASS_RECYCLER_BONUS)+foods.length*CFG.BIOMASS_FOOD_PASSIVE;
+  idle.biomass+=passB+recycG;
+  const permLabBonus=(prestige.perms.permLab||0)*0.8*runStats.eventsResolved*0.0001;
+  const _iStress=entropyStress();
+  idle.insight+=Math.max(0,(nb*CFG.INSIGHT_PER_BIRTH+diversity()/260*CFG.INSIGHT_DIV_FACTOR+pop*CFG.INSIGHT_POP_FACTOR)*labMul*_iStress.insightMul+permLabBonus);
+  idle.insight=Math.max(0,idle.insight); // nunca negativo
+  const entropyMul=effects.reduce((m,e)=>m*(e.entropyMul||1),1);
+  const ecoMul=1-Math.min(0.3,(prestige.perms.resilientEco||0)*0.10);
+  const pd=prestigeDiff();
+  idle.entropy+=(Math.max(0,crowd-CFG.CROWDING_THRESH)*(CFG.ENTROPY_CROWDING_MULT+pop/420)+pop*CFG.ENTROPY_POP_PASSIVE)*entropyMul*ecoMul*pd.entropyMult;
+  idle.entropy-=CFG.ENTROPY_RELIEF_BASE+upgrades.stabilizer*CFG.UP_STABILIZER_RELIEF;
+  idle.entropy=clamp(idle.entropy,0,CFG.ENTROPY_CAP);
+}
+function diversity(){
+  if(agents.length<2)return 0;
+  const keys=['curiosity','caution','social','metabolism','speed','memory'];
+  let t=0;for(const k of keys){const m=agents.reduce((s,a)=>s+a.g[k],0)/agents.length;t+=Math.sqrt(agents.reduce((s,a)=>s+(a.g[k]-m)**2,0)/agents.length);}
+  return Math.round(t*100);
+}
+// Upgrades da run — custo biomassa resetam; custo insight persistem entre runs
+const upgradeDefs=[
+  {id:'incubator', name:'Biorreatores',           desc:'Mais comida nasce e rende mais energia.',          currency:'biomass', base:90,  scale:1.62, max:16, resetsOnAscend:true},
+  {id:'mitosis',   name:'Mitose assistida',        desc:'Reduz limiar energético para reprodução.',         currency:'biomass', base:140, scale:1.78, max:14, resetsOnAscend:true},
+  {id:'logistics', name:'Logística espacial',      desc:'Aumenta capacidade de suporte do mundo.',          currency:'biomass', base:220, scale:1.88, max:18, resetsOnAscend:true},
+  {id:'recycler',  name:'Reciclagem trófica',      desc:'Mortes e veneno viram biomassa útil.',             currency:'biomass', base:260, scale:1.72, max:12, resetsOnAscend:true},
+  {id:'stabilizer',name:'Estabilizador entrópico', desc:'Desacelera entropia e custo metabólico.',           currency:'insight', base:14,  scale:1.72, max:12, resetsOnAscend:true},
+  {id:'lab',       name:'Laboratório de seleção',  desc:'Mais insight por diversidade e nascimentos.',       currency:'insight', base:12,  scale:1.75, max:10, resetsOnAscend:true},
+];
+// Upgrades permanentes — comprados com Memória Evolutiva
+const permUpgradeDefs=[
+  {id:'heritageBonus',    name:'Herança Basal',         desc:'Nova run começa com +120 biomassa e +8 insight.',         cost:[3,8,20],   max:3},
+  {id:'collectiveMemory', name:'Instinto Coletivo',      desc:'Agentes nascem com memória inicial +0.15 por nível.',     cost:[4,10,25],  max:3},
+  {id:'directedMutation', name:'Mutação Dirigida',       desc:'Respostas corretas dão +50% de boost por nível.',         cost:[5,12,30],  max:3},
+  {id:'resilientEco',     name:'Ecossistema Resiliente', desc:'Entropia cresce 10% mais devagar por nível.',             cost:[6,15,35],  max:3},
+  {id:'seedBank',         name:'Banco de Sementes',      desc:'Desbloqueia biomas avançados: Ciclo Ártico e Parasitismo.',cost:[10,25],    max:2},
+  {id:'permLab',          name:'Laboratório Permanente', desc:'+0.8 insight por evento resolvido, permanente.',          cost:[8,20,50],  max:3},
+];
+
+function runUpgradeCap(d){
+  if(d.currency!=='biomass')return d.max; // insight upgrades: sem cap extra
+  const p=prestige.runCount||0;
+  if(p>=3) return Math.min(d.max,6);
+  if(p>=2) return Math.min(d.max,8);
+  if(p>=1) return Math.min(d.max,10);
+  return d.max; // P0: sem cap extra
+}
+
+function upgradeCost(d){
+  const base=Math.ceil(d.base*Math.pow(d.scale,upgrades[d.id]));
+  // Janela pós-quiz: upgrades de insight ficam 30% mais baratos por 400 ciclos (prestígio 2+)
+  if(quizUpgradeWindow>0&&d.currency==='insight'&&(prestige.runCount||0)>=2)
+    return Math.ceil(base*QUIZ_WINDOW_DISCOUNT);
+  return base;
+}
+function canBuy(d){return upgrades[d.id]<d.max&&idle[d.currency]>=upgradeCost(d);}
+function currLabel(c){return c==='insight'?'insight':'biomassa';}
+function buyUpgrade(id){
+  const d=upgradeDefs.find(x=>x.id===id);if(!d||!canBuy(d))return;
+  if(upgrades[id]>=runUpgradeCap(d)){showToast("Teto da run","Ascenda para desbloquear mais níveis deste upgrade.");return;}
+  const cost=upgradeCost(d);idle[d.currency]-=cost;upgrades[id]++;
+  logEntry('Upgrade: '+d.name,'Nível '+upgrades[id]+' — custo '+fmt(cost)+' '+currLabel(d.currency)+'.','');
+  saveState();renderUpgrades();updateUI();
+}
+
+/* ═══ AMBIENTE ═══ */
+function effectSum(key){return effects.reduce((s,e)=>s+(e[key]||0),0);}
+function effectivePace(){return clamp(world.pace+effectSum('pace'),CFG.PACE_MIN,CFG.PACE_MAX);}
+function effectiveMutation(){return clamp(world.mutationRate+effectSum('mutation'),CFG.MUTATION_MIN,CFG.MUTATION_MAX);}
+function effectivePressure(){return clamp(world.pressure+effectSum('pressure'),CFG.PRESSURE_MIN,CFG.PRESSURE_MAX);}
+function applyResourceDelta(eff){
+  // Todos os campos de recurso com suporte a valores negativos
+  if(eff.biomass!==undefined) idle.biomass=Math.max(0,idle.biomass+eff.biomass);
+  if(eff.insight!==undefined) idle.insight=Math.max(0,idle.insight+eff.insight);
+  if(eff.entropy!==undefined) idle.entropy=clamp(idle.entropy+eff.entropy,0,CFG.ENTROPY_CAP);
+  if(eff.food!==undefined){
+    if(eff.food>0) scatter(foods,eff.food);
+    else { // remoção proporcional
+      const rm=Math.round(Math.abs(eff.food));
+      for(let i=0;i<rm&&foods.length;i++) foods.splice(Math.floor(Math.random()*foods.length),1);
+    }
+  }
+  if(eff.poison!==undefined){
+    if(eff.poison>0) scatter(poisons,eff.poison);
+    else {
+      const rm=Math.round(Math.abs(eff.poison));
+      for(let i=0;i<rm&&poisons.length;i++) poisons.splice(Math.floor(Math.random()*poisons.length),1);
+    }
+  }
+  // diversity: aplica pressão seletiva que redistribui genes
+  if(eff.diversity!==undefined){
+    const delta=eff.diversity;
+    if(delta>0){
+      // Injetar variabilidade pequena em fração dos agentes
+      function geneBounds(k){return k==='social'?[-1,1.2]:(k==='metabolism'||k==='speed')?[0.03,1.8]:[0.03,1.2];}
+    agents.forEach(a=>{ if(Math.random()<0.18){ for(const k of Object.keys(a.g)){const[mn,mx]=geneBounds(k);a.g[k]=clamp(a.g[k]+rand(-.12,.12),mn,mx);} } });
+    } else {
+      // Convergir genes em direção à média (reduz diversidade)
+      const keys=['curiosity','caution','social','metabolism','speed','memory'];
+      keys.forEach(k=>{
+        const mn=k==='social'?-1:0.03,mx=(k==='metabolism'||k==='speed')?1.8:1.2;
+        const m=agents.reduce((s,a)=>s+a.g[k],0)/Math.max(1,agents.length);
+        agents.forEach(a=>{ a.g[k]=clamp(a.g[k]+(m-a.g[k])*0.15,mn,mx); });
+      });
+    }
+  }
+  // capacity: adicionar flat capacity via effects já é tratado em effectSum('capacity') em carryingCapacity()
+  // survivorEnergy: aplicado somente no bloco killFrac de addEffect, nao aqui
+}
+
+function addEffect(eff){
+  if(!eff)return;
+  // Recursos instantâneos
+  applyResourceDelta(eff);
+  // Efeitos especiais
+  if(eff.killFrac){
+    const before=agents.length;
+    agents=agents.filter(()=>Math.random()>eff.killFrac);
+    if(eff.survivorEnergy) agents.forEach(a=>{ a.energy=Math.min(210,a.energy+eff.survivorEnergy); });
+    logEntry('Agentes eliminados',Math.round(eff.killFrac*100)+'% removidos. '+agents.length+'/'+before+' sobreviventes.','type-epic');
+  }
+  if(eff.zeroGene){
+    const k=eff.zeroGene,fr=eff.zeroFrac||.4;
+    agents.forEach(a=>{if(Math.random()<fr)a.g[k]=.03;});
+    logEntry('Gene zerado','"'+k+'" apagado em ~'+Math.round(fr*100)+'% dos agentes.','type-epic');
+  }
+  // Temporários — apenas campos que afetam effectivePace/Mutation/Pressure/capacity
+  if(eff.cycles){
+    effects=effects.filter(e=>e.id!==eff.id);
+    // Limpa campos não-temporários do objeto antes de armazenar
+    const temporal={id:eff.id,name:eff.name,type:eff.type,cycles:eff.cycles};
+    if(eff.pace!==undefined)temporal.pace=eff.pace;
+    if(eff.mutation!==undefined)temporal.mutation=eff.mutation;
+    if(eff.pressure!==undefined)temporal.pressure=eff.pressure;
+    if(eff.capacity!==undefined)temporal.capacity=eff.capacity;
+    if(eff.foodEnergyMul!==undefined)temporal.foodEnergyMul=eff.foodEnergyMul;
+    if(eff.entropyMul!==undefined)temporal.entropyMul=eff.entropyMul;
+    effects.push(temporal);
+  }
+}
+function tickEffects(){const p=effects.length;for(const e of effects)e.cycles--;effects=effects.filter(e=>e.cycles>0);if(effects.length<p)renderEffects();}
+function worldDrift(){
+  if(cycle>0&&cycle%CFG.DRIFT_INTERVAL===0){
+    world.pace=clamp(world.pace+rand(-.28,.28),.8,4.8);
+    world.mutationRate=clamp(world.mutationRate+rand(-.012,.012),.025,.14);
+    world.pressure=clamp(world.pressure+rand(-.08,.09),.72,1.65);
+    logEntry('Deriva sistêmica','Ritmo, mutação e pressão recalibrados.','');
+  }
+}
+function scheduleNextEvent(short=false){
+  const wrongPressure=Math.min(30,(runStats.quizWrong||0))*60*1000; // até -30min por erros
+  const base=short?rand(8,18)*60*1000:Math.max(30*60*1000,CFG.EVENT_INTERVAL_MS-wrongPressure);
+  world.nextEventMs=elapsedMs+base;
+}
+function maybeTimedEvent(){
+  // Primeiro quiz didático: 10 min, antes dos eventos normais
+  if(!onboarding.firstQuizDone && elapsedMs>=onboarding.firstEventMs && !modalOpen){
+    onboarding.firstQuizDone=true;
+    saveState();
+    triggerTutorialQuiz();
+    return;
+  }
+  if(elapsedMs>=world.nextEventMs&&!modalOpen)triggerEvent(false);
+}
+function fmtCountdown(t){const rem=Math.max(0,Math.ceil((t-elapsedMs)/1000)),h=Math.floor(rem/3600),m=Math.floor((rem%3600)/60),s=rem%60;return h>0?h+'h '+String(m).padStart(2,'0')+'m':String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+
+/* ═══ CONTEÚDO ═══ */
+const QUESTIONS=[
+{id:'a1',cat:'algoritmos',dif:1,stem:'Um agente percorre vizinhos em raio R para achar comida. Se R dobrar, quantas vezes mais posições ele examina?',opts:['2×','4×','R×','log R×'],cor:1,exp:'Área de círculo cresce com r². Dobrar R → 4× a área. Custo O(r²).',reward:{id:'rq',name:'Busca otimizada',type:'buff',cycles:1800,pace:.3,pressure:-.06,insight:8},penalty:{id:'pq',name:'Busca ineficiente',type:'debuff',cycles:1400,pressure:.2,entropy:8}},
+{id:'a2',cat:'algoritmos',dif:1,stem:'Qual estrutura permite acesso O(1) pelo índice?',opts:['Lista encadeada','Árvore binária','Array','Fila de prioridade'],cor:2,exp:'Array: memória contígua. Índice → endereço direto. O(1) garantido.',reward:{id:'rq',name:'Acesso direto',type:'buff',cycles:1600,pace:.25,biomass:30},penalty:{id:'pq',name:'Acesso lento',type:'debuff',cycles:1200,pace:-.4,entropy:6}},
+{id:'a3',cat:'algoritmos',dif:1,stem:'O que diferencia busca binária de linear?',opts:['Binária funciona em qualquer lista','Binária exige lista ordenada e corta o espaço pela metade a cada passo','Linear é sempre mais rápida','Binária usa recursão obrigatoriamente'],cor:1,exp:'Busca binária: compara o meio, descarta metade. Pré-requisito: ordenação. O(log n) vs O(n).',reward:{id:'rq',name:'Exploração inteligente',type:'buff',cycles:1500,food:60,pace:.2},penalty:{id:'pq',name:'Exploração cega',type:'debuff',cycles:1300,food:-40,entropy:5}},
+{id:'a4',cat:'algoritmos',dif:1,stem:'Loop aninhado: N agentes × N agentes. Complexidade?',opts:['O(N)','O(N log N)','O(N²)','O(2N)'],cor:2,exp:'N×N = N² operações. Na v3, nearestExcept() eliminou a alocação dinâmica do .filter() por agente, reduzindo GC pressure. A busca ainda é O(N) por agente; spatial grid é necessário para eliminar o O(N²) de verdade.',reward:{id:'rq',name:'Eficiência recuperada',type:'buff',cycles:2000,pace:.4,biomass:40},penalty:{id:'pq',name:'Custo quadrático',type:'debuff',cycles:1600,pace:-.6,pressure:.15}},
+{id:'a5',cat:'algoritmos',dif:2,stem:'Merge sort: complexidade no pior caso?',opts:['O(N)','O(N log N)','O(N²)','O(log N)'],cor:1,exp:'Cada nível tem N elementos, são log N níveis. Total: N log N. Estável e previsível.',reward:{id:'rq',name:'Ordenação eficiente',type:'buff',cycles:2000,insight:12},penalty:{id:'pq',name:'Ordenação ineficiente',type:'debuff',cycles:1800,pressure:.2,entropy:10}},
+{id:'a6',cat:'algoritmos',dif:2,stem:'Recursão sem caso base garante o quê?',opts:['Resultado mais rápido','Economia de memória','Stack overflow — pilha esgota','Paralelismo automático'],cor:2,exp:'Cada chamada empilha um frame. Sem parada, pilha cresce até estourar. JS: RangeError.',reward:{id:'rq',name:'Recursão controlada',type:'buff',cycles:1800,entropy:-10,insight:8},penalty:{id:'pq',name:'Pilha estourada',type:'debuff',cycles:1500,entropy:18,pace:-.3}},
+{id:'a7',cat:'algoritmos',dif:2,stem:'Qual técnica cacheia subproblemas sobrepostos para evitar recomputação?',opts:['Greedy','Backtracking','Programação dinâmica','BFS'],cor:2,exp:'DP usa memoization ou tabulação. Fibonacci com DP: O(N) em vez de O(2^N).',reward:{id:'rq',name:'Memória adaptativa',type:'buff',cycles:2200,mutation:-.02,insight:14},penalty:{id:'pq',name:'Recomputação excessiva',type:'debuff',cycles:1800,pace:-.5,entropy:12}},
+{id:'a8',cat:'algoritmos',dif:2,stem:'Qual algoritmo tem O(N²) no pior caso mas O(N) em lista quase ordenada?',opts:['Merge sort','Heap sort','Insertion sort','Quick sort'],cor:2,exp:'Insertion sort: insere na posição certa. Lista quase ordenada → poucos deslocamentos → O(N).',reward:{id:'rq',name:'Adaptação ao ambiente',type:'buff',cycles:1900,pace:.3,food:50},penalty:{id:'pq',name:'Ineficiência adaptativa',type:'debuff',cycles:1600,pressure:.18,entropy:8}},
+{id:'a9',cat:'algoritmos',dif:3,stem:'Quick sort com pivô sempre no extremo em lista ordenada tem complexidade:',opts:['O(N log N) sempre','O(N)','O(N²) — caso degenerado','O(log N)'],cor:2,exp:'Pivô no extremo: cada partição remove 1 elemento. N-1 partições → O(N²). Solução: pivô aleatório.',reward:{id:'rq',name:'Pivô ótimo',type:'buff',cycles:2400,insight:16,entropy:-12},penalty:{id:'pq',name:'Pivô degenerado',type:'debuff',cycles:2000,pace:-.7,pressure:.25}},
+{id:'a10',cat:'algoritmos',dif:3,stem:'A* usa f(n)=g(n)+h(n). O que representa cada termo?',opts:['g=heurística futura, h=custo passado','g=custo real do início até n, h=estimativa do custo até o destino','g=profundidade, h=largura','São o mesmo valor'],cor:1,exp:'g(n): custo real acumulado. h(n): heurística admissível do restante. A* é ótimo se h nunca superestima.',reward:{id:'rq',name:'Navegação ótima',type:'buff',cycles:2600,pace:.5,pressure:-.1,insight:18},penalty:{id:'pq',name:'Caminho subótimo',type:'debuff',cycles:2200,food:-60,entropy:14}},
+{id:'a11',cat:'algoritmos',dif:3,stem:'Por que agentes desta simulação não usam A* para navegar?',opts:['A* é simples demais','Ambiente muda a cada ciclo — A* para 500 agentes×60fps seria inviável','A* só funciona em grafos acíclicos','A* não existe em JS'],cor:1,exp:'500 agentes × custo_A* × 60fps é impraticável. Força local é O(N) total e suficiente para emergência.',reward:{id:'rq',name:'Pragmatismo algorítmico',type:'buff',cycles:2200,pace:.35,biomass:60},penalty:{id:'pq',name:'Custo de busca global',type:'debuff',cycles:1900,pace:-.5,pressure:.2}},
+{id:'e1',cat:'estruturas',dif:1,stem:'O array trails tem W×H=7200 posições. Buscar trail de (x,y) custa O(?)',opts:['O(n)','O(log n)','O(1)','O(n²)'],cor:2,exp:'Acesso por índice: trails[y*W+x]. Endereçamento direto → O(1).',reward:{id:'rq',name:'Acesso instantâneo',type:'buff',cycles:1600,insight:10,pace:.2},penalty:{id:'pq',name:'Busca lenta',type:'debuff',cycles:1200,pace:-.3,entropy:5}},
+{id:'e2',cat:'estruturas',dif:1,stem:'Qual estrutura garante FIFO (primeiro a entrar, primeiro a sair)?',opts:['Pilha (Stack)','Fila (Queue)','Árvore binária','Hash map'],cor:1,exp:'Fila: enqueue no final, dequeue no início. FIFO. Pilha é LIFO.',reward:{id:'rq',name:'Ordem preservada',type:'buff',cycles:1500,food:45,insight:6},penalty:{id:'pq',name:'Ordem invertida',type:'debuff',cycles:1200,entropy:8,pressure:.1}},
+{id:'e3',cat:'estruturas',dif:1,stem:'Por que Float32Array é mais eficiente que array JS para os 7200 valores de trilha?',opts:['Aceita strings também','Tipado — 4 bytes por elemento, contíguo, cache-friendly','É mais lento mas mais fácil','Não existe em JS'],cor:1,exp:'Arrays JS são heterogêneos. Float32Array: 4 bytes por float, layout contíguo, acesso rápido pela CPU.',reward:{id:'rq',name:'Memória eficiente',type:'buff',cycles:1800,pace:.3,biomass:25},penalty:{id:'pq',name:'Overhead de memória',type:'debuff',cycles:1400,pace:-.4,entropy:7}},
+{id:'e4',cat:'estruturas',dif:2,stem:'Hash table tem O(1) amortizado. O que "amortizado" significa aqui?',opts:['Sempre O(1) em todo caso','Média O(1) sobre muitas operações — colisões elevam o custo pontualmente','Só com chaves numéricas','São O(log n) na prática'],cor:1,exp:'Colisões acontecem mas são raras com boa função hash. Custo médio sobre muitas buscas converge para O(1).',reward:{id:'rq',name:'Acesso amortizado',type:'buff',cycles:2000,insight:12,entropy:-8},penalty:{id:'pq',name:'Colisões frequentes',type:'debuff',cycles:1700,pace:-.4,pressure:.15}},
+{id:'e5',cat:'estruturas',dif:2,stem:'Inserção e remoção O(1) em ambas as extremidades: qual estrutura?',opts:['Array estático','Deque (double-ended queue)','Árvore AVL','Heap máximo'],cor:1,exp:'Deque: operações eficientes nas duas pontas. Arrays têm O(N) para inserção no início.',reward:{id:'rq',name:'Flexibilidade estrutural',type:'buff',cycles:1900,pace:.25,food:40},penalty:{id:'pq',name:'Rigidez estrutural',type:'debuff',cycles:1500,food:-30,entropy:6}},
+{id:'e6',cat:'estruturas',dif:2,stem:'Heap mínimo — inserir elemento custa O(?)',opts:['O(1)','O(log n)','O(n)','O(n log n)'],cor:1,exp:'Inserção no final + heapify-up: sobe log n vezes no pior caso (altura da árvore binária completa).',reward:{id:'rq',name:'Prioridade eficiente',type:'buff',cycles:1800,insight:10,biomass:30},penalty:{id:'pq',name:'Prioridade comprometida',type:'debuff',cycles:1400,pressure:.18,entropy:9}},
+{id:'e7',cat:'estruturas',dif:3,stem:'Por que uma grade espacial (spatial grid) aceleraria o nearest() desta simulação?',opts:['Não aceleraria — já é O(1)','Grade divide o espaço em células — buscar em raio R verifica só células próximas: O(k) com k<<N','Requer agentes ordenados por id','Só funciona com predadores'],cor:1,exp:'Sem grade: nearest() percorre todos N. Com grade: busca raio R verifica só células dentro do raio → k << N.',reward:{id:'rq',name:'Grid espacial',type:'buff',cycles:2400,pace:.5,pressure:-.08},penalty:{id:'pq',name:'Busca global',type:'debuff',cycles:2000,pace:-.6,entropy:12}},
+{id:'e8',cat:'estruturas',dif:3,stem:'B-tree vs BST: diferença mais importante?',opts:['B-tree é mais lenta','B-tree tem mais filhos por nó — minimiza acessos a disco em sistemas de armazenamento','BST é para inteiros, B-tree para strings','São idênticas'],cor:1,exp:'BST: 2 filhos. B-tree: m filhos, m-1 chaves por nó. Menor altura → menos leituras de bloco. Essencial em BDs e sistemas de arquivos.',reward:{id:'rq',name:'Armazenamento eficiente',type:'buff',cycles:2200,insight:14,biomass:50},penalty:{id:'pq',name:'Acesso a disco lento',type:'debuff',cycles:1900,pace:-.5,entropy:10}},
+{id:'c1',cat:'complexidade',dif:1,stem:'O que notação Big-O descreve?',opts:['Tempo exato em ms','Crescimento do custo em relação ao tamanho da entrada','Memória máxima usada','Número de linhas do código'],cor:1,exp:'Big-O: como o custo cresce com N. Ignora constantes, foca no comportamento assintótico.',reward:{id:'rq',name:'Análise assintótica',type:'buff',cycles:1500,pace:.2,insight:6},penalty:{id:'pq',name:'Custo mal estimado',type:'debuff',cycles:1200,entropy:6,pressure:.1}},
+{id:'c2',cat:'complexidade',dif:1,stem:'Se dobrar N dobra o tempo, a complexidade é:',opts:['O(1)','O(log N)','O(N)','O(N²)'],cor:2,exp:'Relação linear = O(N). Se mantivesse igual: O(1). Se quadruplicasse: O(N²).',reward:{id:'rq',name:'Escala linear',type:'buff',cycles:1500,food:50,insight:5},penalty:{id:'pq',name:'Escala errada',type:'debuff',cycles:1200,pressure:.12,entropy:5}},
+{id:'c3',cat:'complexidade',dif:1,stem:'diversity() percorre 6 genes de N agentes duas vezes. Complexidade?',opts:['O(1)','O(6)','O(N)','O(N²)'],cor:2,exp:'12N operações. Constante ignorada em Big-O: O(N). Cresce linearmente com a população.',reward:{id:'rq',name:'Análise do próprio jogo',type:'buff',cycles:1900,insight:14},penalty:{id:'pq',name:'Custo subestimado',type:'debuff',cycles:1500,entropy:8,pressure:.12}},
+{id:'c4',cat:'complexidade',dif:2,stem:'Buscar elemento em lista encadeada sem ordenação: O(?)',opts:['O(1)','O(log N)','O(N)','O(N log N)'],cor:2,exp:'Percorre do início até encontrar. Pior caso: N nós. O(N). Acesso por índice também é O(N).',reward:{id:'rq',name:'Busca sequencial',type:'buff',cycles:1700,pace:.2,insight:8},penalty:{id:'pq',name:'Busca custosa',type:'debuff',cycles:1300,pace:-.35,entropy:7}},
+{id:'c5',cat:'complexidade',dif:2,stem:'Knapsack 0/1 com N itens e capacidade W: DP custa O(?)',opts:['O(N log N)','O(N×W)','O(2^N)','O(N²)'],cor:1,exp:'DP preenche tabela N×W. Custo O(NW). Recursão sem memoization é O(2^N).',reward:{id:'rq',name:'DP eficiente',type:'buff',cycles:2000,insight:12,entropy:-8},penalty:{id:'pq',name:'Explosão exponencial',type:'debuff',cycles:1700,pressure:.2,entropy:12}},
+{id:'c6',cat:'complexidade',dif:3,stem:'P vs NP: o que a distinção descreve?',opts:['Velocidade do processador','P: resolvíveis em tempo polinomial. NP: verificáveis em polinomial mas sem solução polinomial conhecida.','P é mais difícil que NP','São a mesma classe'],cor:1,exp:'P ⊆ NP. A questão aberta: P=NP? Se sim, criptografia RSA quebra.',reward:{id:'rq',name:'Fronteira computacional',type:'buff',cycles:2600,insight:20,entropy:-12},penalty:{id:'pq',name:'Complexidade mal compreendida',type:'debuff',cycles:2200,entropy:15,pressure:.22}},
+{id:'c7',cat:'complexidade',dif:3,stem:'Halting Problem de Turing: o que prova?',opts:['Todo programa para','Nenhum algoritmo geral pode determinar se um programa arbitrário para — indecidível','É decidível com hardware suficiente','Só aplica a linguagens de baixo nível'],cor:1,exp:'Turing (1936) por diagonalização: nenhuma máquina de Turing pode decidir para todo (P,I) se P(I) termina. Define o limite do computável.',reward:{id:'rq',name:'Limite da computação',type:'buff',cycles:2800,insight:22,entropy:-14},penalty:{id:'pq',name:'Ilusão de onisciência',type:'debuff',cycles:2400,entropy:18,pressure:.28}},
+{id:'s1',cat:'sistemas',dif:1,stem:'Nenhum agente "sabe" que a população vai colapsar, mas o sistema colapsa. Isso é:',opts:['Bug do código','Comportamento emergente','Inteligência centralizada','Deadlock'],cor:1,exp:'Regras locais simples + muitas interações = padrões globais não programados. Emergência clássica.',reward:{id:'rq',name:'Leitura emergente',type:'buff',cycles:1800,insight:12,entropy:-6},penalty:{id:'pq',name:'Miopia sistêmica',type:'debuff',cycles:1400,entropy:12,pressure:.1}},
+{id:'s2',cat:'sistemas',dif:1,stem:'Feedback negativo em sistemas biológicos tende a:',opts:['Amplificar desvios','Corrigir desvios e estabilizar','Eliminar toda variabilidade','Acelerar crescimento indefinido'],cor:1,exp:'Feedback negativo: o efeito de uma mudança atua contra ela. A entropia desta simulação é um exemplo clássico.',reward:{id:'rq',name:'Estabilidade regulada',type:'buff',cycles:1700,entropy:-10,pressure:-.06},penalty:{id:'pq',name:'Amplificação descontrolada',type:'debuff',cycles:1400,entropy:10,pressure:.15}},
+{id:'s3',cat:'sistemas',dif:2,stem:'diversity() calcula a média dos desvios padrão dos 6 genes. Nome estatístico?',opts:['Média aritmética','Desvio padrão médio por gene (mean gene-wise standard deviation)','Variância total','Coeficiente de variação'],cor:1,exp:'Para cada gene: média → variância → raiz = desvio padrão. Soma × 100. Mede dispersão genética multidimensional.',reward:{id:'rq',name:'Diversidade quantificada',type:'buff',cycles:1900,insight:14},penalty:{id:'pq',name:'Homogeneidade oculta',type:'debuff',cycles:1600,mutation:.05,entropy:8}},
+{id:'s4',cat:'sistemas',dif:2,stem:'O que é uma bifurcação em sistemas dinâmicos?',opts:['Divisão celular','Mudança qualitativa no comportamento quando parâmetro cruza um limiar','Tipo de crossover genético','Erro de arredondamento'],cor:1,exp:'Bifurcação: pequena mudança de parâmetro → mudança qualitativa drástica (equilíbrio → oscilação → caos).',reward:{id:'rq',name:'Transição crítica',type:'buff',cycles:2000,insight:12,entropy:-8},penalty:{id:'pq',name:'Ponto de ruptura',type:'debuff',cycles:1700,entropy:14,pressure:.18}},
+{id:'s5',cat:'sistemas',dif:3,stem:'Modelo de Ising: qual paralelo com esta simulação?',opts:['Nenhum','Agentes interagindo localmente — padrões de alinhamento emergem sem coordenação central, análogo à magnetização espontânea','Agentes calculam forças magnéticas','O código usa Ising diretamente'],cor:1,exp:'Ising: spins em grade, interação local. Abaixo da temperatura crítica, alinhamento global emerge. Aqui: genes, interação local, ordem global.',reward:{id:'rq',name:'Física estatística aplicada',type:'buff',cycles:2500,insight:18,entropy:-10},penalty:{id:'pq',name:'Desordem local',type:'debuff',cycles:2100,mutation:.06,entropy:14}},
+{id:'s6',cat:'sistemas',dif:3,stem:'Incompletude de Gödel: o que afirma?',opts:['Todo sistema formal é completo com axiomas suficientes','Todo sistema formal consistente suficientemente poderoso contém verdades indemonstráveis no próprio sistema','Matemática é inconsistente','Aplica-se só à geometria'],cor:1,exp:'Gödel (1931): em qualquer sistema formal consistente que inclua aritmética, existem verdades que não podem ser provadas dentro do sistema.',reward:{id:'rq',name:'Limite do formal',type:'buff',cycles:2800,insight:22,entropy:-12},penalty:{id:'pq',name:'Ilusão de completude',type:'debuff',cycles:2400,entropy:16,pressure:.22}},
+{id:'g1',cat:'genetica',dif:1,stem:'O operador de mutação aplica deriva pequena na maioria dos genes e deriva grande com probabilidade mutationRate. Isso imita:',opts:['Crossover uniforme','Mutação pontual vs. mutação de grande efeito — como na biologia real','Seleção por torneio','Elitismo'],cor:1,exp:'Biologia real: maioria das mutações são neutras/pequenas. Ocasionalmente surgem mutações de grande efeito. O código modela isso com o threshold mutationRate.',reward:{id:'rq',name:'Janela adaptativa',type:'buff',cycles:1800,mutation:.025,insight:10},penalty:{id:'pq',name:'Ruído genético',type:'debuff',cycles:1500,mutation:.08,pressure:.1}},
+{id:'g2',cat:'genetica',dif:1,stem:'O que é seleção natural nesta simulação?',opts:['O player escolhe quais agentes sobrevivem','Agentes com genes adaptados sobrevivem e reproduzem mais — sem escolha explícita no código','O código ordena agentes por fitness','Todos têm a mesma chance'],cor:1,exp:'Seleção natural emergente: ninguém ranqueia agentes. Quem tem genes adaptados mantém energia e reproduz. Resultado da física do sistema.',reward:{id:'rq',name:'Seleção emergente',type:'buff',cycles:1600,diversity:15,insight:8},penalty:{id:'pq',name:'Deriva aleatória',type:'debuff',cycles:1300,entropy:8,mutation:.04}},
+{id:'g3',cat:'genetica',dif:1,stem:'Gene sob forte pressão seletiva ao longo de muitas gerações tende a:',opts:['Ficar aleatório','Convergir para um valor que maximiza sobrevivência no ambiente atual','Desaparecer completamente','Aumentar sempre até o máximo'],cor:1,exp:'Seleção direcional: genes vantajosos são mais herdados. Ao longo de gerações, o valor médio converge para o ótimo local.',reward:{id:'rq',name:'Convergência adaptativa',type:'buff',cycles:1700,pressure:-.08,insight:8},penalty:{id:'pq',name:'Pressão mal entendida',type:'debuff',cycles:1300,entropy:8,pressure:.15}},
+{id:'g4',cat:'genetica',dif:2,stem:'O que é "elitismo" em algoritmos genéticos?',opts:['Matar os mais fracos imediatamente','Garantir que os de maior fitness passam para a próxima geração sem mutação','Aplicar crossover só em elites','Manter 100% da população'],cor:1,exp:'Elitismo: copia os melhores N diretamente para a próxima geração. Esta simulação não tem elitismo explícito — sobrevivência é contínua.',reward:{id:'rq',name:'Preservação de elite',type:'buff',cycles:1900,insight:12},penalty:{id:'pq',name:'Perda de linhagem',type:'debuff',cycles:1600,mutation:.05,entropy:10}},
+{id:'g5',cat:'genetica',dif:2,stem:'Crossover de um ponto em AG: o que modela biologicamente?',opts:['Mutação pontual','Recombinação sexual — troca de segmentos cromossômicos entre dois pais','Deriva genética','Seleção por torneio'],cor:1,exp:'Crossing over na meiose: cromossomos homólogos trocam segmentos. Gera combinações novas. Esta simulação usa reprodução assexuada — crossover seria um upgrade futuro.',reward:{id:'rq',name:'Recombinação genética',type:'buff',cycles:2100,diversity:20,insight:14},penalty:{id:'pq',name:'Herança rígida',type:'debuff',cycles:1700,diversity:-10,entropy:8}},
+{id:'g6',cat:'genetica',dif:2,stem:'O que é "deriva genética" e quando domina sobre seleção?',opts:['É o mesmo que mutação','Mudança aleatória na frequência alélica, dominante em populações pequenas onde estocasticidade supera pressão seletiva','É feedback negativo da entropia','Só ocorre em espécies extintas'],cor:1,exp:'Deriva: flutuações aleatórias na herança. Em populações grandes, seleção domina. Em pequenas, aleatoriedade pode fixar alelos não adaptativos.',reward:{id:'rq',name:'Estabilidade populacional',type:'buff',cycles:2000,insight:12,entropy:-6},penalty:{id:'pq',name:'Gargalo genético',type:'debuff',cycles:1700,diversity:-15,mutation:.06}},
+{id:'g7',cat:'genetica',dif:3,stem:'Schema Theorem de Holland: AGs processam quais unidades?',opts:['Genes isolados','Esquemas — padrões parciais que, se associados a fitness alto, se proliferam exponencialmente','Cromossomos inteiros','Fitness médio da população'],cor:1,exp:'Esquema: template com * nas posições irrelevantes. Holland provou que AGs processam implicitamente um número exponencial de esquemas em paralelo.',reward:{id:'rq',name:'Paralelismo implícito',type:'buff',cycles:2600,insight:20,diversity:18},penalty:{id:'pq',name:'Processamento cego',type:'debuff',cycles:2200,entropy:14,pressure:.2}},
+{id:'p1',cat:'probabilidade',dif:1,stem:'Cada agente tem 7% de chance de grande mutação por gene. Qual a chance de um gene específico sofrer grande mutação em uma reprodução?',opts:['1%','7%','14%','93%'],cor:1,exp:'Cada gene é testado independentemente com P = mutationRate = 0.07. Portanto: 7% por gene.',reward:{id:'rq',name:'Probabilidade calibrada',type:'buff',cycles:1500,mutation:.02,insight:6},penalty:{id:'pq',name:'Calibração errada',type:'debuff',cycles:1200,mutation:.04,entropy:5}},
+{id:'p2',cat:'probabilidade',dif:1,stem:'Math.random() em JS retorna valores em qual intervalo?',opts:['[0,1] inclui ambos','[0,1) — inclui 0, exclui 1','(0,1) — exclui ambos','[-1,1]'],cor:1,exp:'[0,1): 0 pode aparecer, 1 nunca. rand(min,max) = min + Math.random()*(max-min) nunca alcança exatamente max.',reward:{id:'rq',name:'Precisão estocástica',type:'buff',cycles:1400,pace:.2,insight:5},penalty:{id:'pq',name:'Erro de intervalo',type:'debuff',cycles:1100,entropy:5,pressure:.08}},
+{id:'p3',cat:'probabilidade',dif:2,stem:'Lei dos grandes números: com N grande, a média amostral converge para:',opts:['Sempre zero','A média populacional esperada','O valor máximo possível','Depende da variância'],cor:1,exp:'LGN: com N→∞, média de N amostras independentes converge para E[X]. Por isso diversity() com 640 agentes é mais estável que com 10.',reward:{id:'rq',name:'Convergência estatística',type:'buff',cycles:1900,insight:10,entropy:-6},penalty:{id:'pq',name:'Flutuação amostral',type:'debuff',cycles:1500,entropy:8,mutation:.03}},
+{id:'p4',cat:'probabilidade',dif:2,stem:'Distribuição normal (gaussiana) surge naturalmente como:',opts:['Distribuição de inteiros','Soma de muitas variáveis independentes pelo Teorema Central do Limite','Distribuição de eventos raros','É rara na prática'],cor:1,exp:'TCL: soma de N variáveis i.i.d. converge para Normal. Deriva genética é soma de muitas variações pequenas — tende a normal. Por isso rand(-0.035,0.035) aproxima deriva gaussiana.',reward:{id:'rq',name:'Distribuição adaptativa',type:'buff',cycles:2000,insight:12,diversity:12},penalty:{id:'pq',name:'Distribuição distorcida',type:'debuff',cycles:1700,mutation:.05,entropy:8}},
+{id:'p5',cat:'probabilidade',dif:2,stem:'Dois eventos independentes: P(A)=0.55, P(B)=0.07. Qual é P(A e B)?',opts:['0.62','0.0385','0.48','0.485'],cor:1,exp:'Eventos independentes: P(A∩B) = P(A)×P(B) = 0.55×0.07 = 0.0385.',reward:{id:'rq',name:'Eventos independentes',type:'buff',cycles:1800,food:35,insight:8},penalty:{id:'pq',name:'Correlação falsa',type:'debuff',cycles:1400,entropy:7,pressure:.1}},
+{id:'p6',cat:'probabilidade',dif:3,stem:'Esta simulação é Markoviana? (O estado futuro depende só do estado presente)',opts:['Não, usa JavaScript','Sim — estado completo (agentes, comida, veneno, trails, idle) determina o próximo estado','Não, porque trails acumulam história','É parcialmente Markoviana'],cor:1,exp:'A simulação É Markoviana no estado completo. Trails são PARTE do estado atual, não histórico separado. Dado o estado completo + aleatoriedade, o próximo estado é determinado.',reward:{id:'rq',name:'Cadeia de Markov',type:'buff',cycles:2500,insight:18,entropy:-10},penalty:{id:'pq',name:'Dependência histórica',type:'debuff',cycles:2100,entropy:12,pressure:.18}},
+{id:'p7',cat:'probabilidade',dif:3,stem:'Entropia de Shannon H=-Σp(x)log₂p(x). Se todos os agentes têm genes idênticos, H do espaço genético é:',opts:['Máxima','Mínima (zero)','Igual à diversidade numérica','Negativa'],cor:1,exp:'Uma única categoria com p=1: H=-1×log₂(1)=0. Entropia zero = zero incerteza. Alta diversidade → H alta → mais incerteza evolutiva.',reward:{id:'rq',name:'Entropia informacional',type:'buff',cycles:2700,insight:20,diversity:18},penalty:{id:'pq',name:'Colapso informacional',type:'debuff',cycles:2300,diversity:-12,entropy:14}},
+{id:'j1',cat:'o-jogo',dif:1,stem:'Quando um agente morre por velhice, qual condição exata dispara isso?',opts:['energy < 0','age > AGENT_MAX_AGE (3600)','children === 0','speed < 0.1'],cor:1,exp:'Filtro de mortalidade: a.energy > 0 && a.age < AGENT_MAX_AGE. Ao atingir 3600 ciclos, o agente é removido independentemente da energia.',reward:{id:'rq',name:'Conhecimento do motor',type:'buff',cycles:1600,insight:10,biomass:25},penalty:{id:'pq',name:'Confusão de mortalidade',type:'debuff',cycles:1200,entropy:6,pressure:.1}},
+{id:'j2',cat:'o-jogo',dif:1,stem:'Biomassa idle aumenta de qual forma passiva?',opts:['Só quando o player compra upgrades','Por número de agentes vivos e reciclagem de mortes, amplificada pelo upgrade Reciclagem','Só quando agentes comem','É constante'],cor:1,exp:'passiveBiomass = pop × BIOMASS_PER_AGENT + foods × BIOMASS_FOOD_PASSIVE + deaths × (0.8 + recycler × 0.72). Dois fluxos: passivo por população e reativo por morte.',reward:{id:'rq',name:'Economia entendida',type:'buff',cycles:1700,biomass:50,insight:8},penalty:{id:'pq',name:'Economia opaca',type:'debuff',cycles:1300,biomass:-30,entropy:6}},
+{id:'j3',cat:'o-jogo',dif:1,stem:'O que acontece com reprodução quando população se aproxima da capacidade de suporte?',opts:['Aumenta para compensar','Cai — logistic wall eleva o custo energético de reprodução','Fica constante','Para completamente'],cor:1,exp:'logisticWall = (crowding - 0.38)^2.25 × 165. Ao se aproximar de 1, o expoente 2.25 cria parede de custo não linear que suprime reprodução sem zerá-la.',reward:{id:'rq',name:'Logística compreendida',type:'buff',cycles:1800,capacity:50,insight:8},penalty:{id:'pq',name:'Superpopulação',type:'debuff',cycles:1400,entropy:12,pressure:.15}},
+{id:'j4',cat:'o-jogo',dif:2,stem:'Por que o produto effectivePressure() × entropyDrag() tem um cap de 3.2?',opts:['Convenção visual','Para evitar que entropia alta + pressão alta matem toda a população em poucos ciclos','O cap não existe nesta versão','3.2 é o valor de pressão máxima'],cor:1,exp:'Sem cap: pressure=2.35 × entropyDrag(entropy=100) ≈ 4.23. Com 500 agentes gastando 4× mais energia, colapso em ~200 ciclos. Cap de 3.2 dá tempo para reagir.',reward:{id:'rq',name:'Balanceamento defensivo',type:'buff',cycles:2000,entropy:-12,insight:12},penalty:{id:'pq',name:'Pressão descontrolada',type:'debuff',cycles:1700,pressure:.2,entropy:10}},
+{id:'j5',cat:'o-jogo',dif:2,stem:'diversity() retorna um número como 87. O que isso representa exatamente?',opts:['Percentual de genes únicos','Soma dos desvios padrão dos 6 genes escalada por 100 — dispersão genética multidimensional','Número de linhagens distintas','Número de genes acima da média'],cor:1,exp:'Para cada gene: desvio padrão. Soma de 6 desvios × 100. Não é percentual — é uma métrica ad hoc de dispersão. Zero = população geneticamente idêntica.',reward:{id:'rq',name:'Diversidade quantificada',type:'buff',cycles:2100,insight:14,diversity:15},penalty:{id:'pq',name:'Métrica incompreendida',type:'debuff',cycles:1700,entropy:8,mutation:.04}},
+{id:'j6',cat:'o-jogo',dif:2,stem:'Como a velocidade efetiva do mundo é determinada na v3?',opts:['Um slider que o player controla','world.pace (muda por drift) + soma de efeitos temporários com campo pace','Uma constante fixa de 2x','Depende do número de agentes'],cor:1,exp:'effectivePace() = clamp(world.pace + effectSum("pace"), 0.45, 8). world.pace muda por worldDrift() a cada 1500 ciclos. Efeitos temporários somam/subtraem.',reward:{id:'rq',name:'Controle indireto',type:'buff',cycles:1900,pace:.3,insight:10},penalty:{id:'pq',name:'Ilusão de controle',type:'debuff',cycles:1600,pace:-.4,entropy:7}},
+{id:'j7',cat:'o-jogo',dif:3,stem:'Por que agentes com gene social negativo têm vantagem em escassez?',opts:['São mais rápidos','Social negativo repele vizinhos → dispersão maior → menor competição local por comida','Social negativo aumenta cautela','Gene social não afeta busca de comida'],cor:1,exp:'friend detectado → ax += dx/mag × social × 0.08. Se social < 0, vetor inverte: agente se afasta. Dispersão reduz sobreposição de raios de busca → mais comida por agente.',reward:{id:'rq',name:'Estratégia antisocial',type:'buff',cycles:2300,food:60,insight:14},penalty:{id:'pq',name:'Clustering mal entendido',type:'debuff',cycles:1900,food:-40,entropy:10}},
+{id:'j8',cat:'o-jogo',dif:3,stem:'cycleAccumulator e effectivePace() servem para:',opts:['Medir FPS do navegador','Separar velocidade de simulação da velocidade de renderização — permite frações de ciclo por frame sem saltos','Controlar taxa de mutação','São redundantes com requestAnimationFrame'],cor:1,exp:'cycleAcc += effectivePace(); steps = floor(cycleAcc); cycleAcc -= steps. Desacopla simulação de renderização. Pace 1.7 = 1 ciclo num frame, 2 no seguinte, alternando suavemente.',reward:{id:'rq',name:'Desacoplamento temporal',type:'buff',cycles:2400,insight:16,pace:.4},penalty:{id:'pq',name:'Saltos de simulação',type:'debuff',cycles:2000,pace:-.5,entropy:8}},
+{id:'j9',cat:'o-jogo',dif:3,stem:'Por que worldDrift usa rand(-0.28, 0.28) simétrico para pace nesta v3, diferente da v2 que usava rand(-0.25, 0.32)?',opts:['Erro de digitação','v2 tinha viés positivo que acelerava o mundo gradualmente. Simétrico elimina esse viés.','Simétrico é mais rápido computacionalmente','Não existe diferença funcional'],cor:1,exp:'v2: E[drift] = 0.035 > 0. Ao longo de ciclos, world.pace tendia a subir até o clamp. v3: E[drift] = 0. Oscilação ao redor do base sem tendência sistemática.',reward:{id:'rq',name:'Balanceamento simétrico',type:'buff',cycles:2600,insight:18,entropy:-8},penalty:{id:'pq',name:'Viés de aceleração',type:'debuff',cycles:2200,pace:.5,entropy:10}},
+];
+
+const DILEMMAS=[
+{id:'d1',title:'Sacrifício logístico',stem:'A entropia está acima de 60%. Você pode estabilizar agora sacrificando biomassa, ou deixar o caos continuar e colher diversidade.',choices:[{label:'Estabilizar',desc:'Queima biomassa para reduzir entropia agora.',effect:{id:'d1a',name:'Estabilização forçada',type:'neutral',cycles:2200,entropy:-22,biomass:-65}},{label:'Arriscar caos',desc:'Deixa a entropia agir e espera ganho genético.',effect:{id:'d1b',name:'Caos controlado',type:'buff',cycles:2000,mutation:.05,insight:15}}]},
+{id:'d2',title:'Recurso ou resiliência',stem:'Uma floração de comida chegou. Você pode crescer rápido ou dispersar alimento para fortalecer agentes fracos.',choices:[{label:'Crescer',desc:'Concentra comida — population boom.',effect:{id:'d2a',name:'Crescimento concentrado',type:'buff',cycles:1800,food:120,pressure:.12}},{label:'Dispersar',desc:'Espalha comida — população mais robusta.',effect:{id:'d2b',name:'Resiliência dispersa',type:'neutral',cycles:2000,food:60,pressure:-.06,entropy:-5}}]},
+{id:'d3',title:'Insight vs biomassa',stem:'O laboratório pode converter excesso de biomassa em insight acelerado, ou preservar biomassa para upgrades futuros.',choices:[{label:'Converter',desc:'+40 insight imediato, -80 biomassa.',effect:{id:'d3a',name:'Conversão metabólica',type:'neutral',insight:40,biomass:-80}},{label:'Preservar',desc:'Biomassa intocada, +10 insight ao longo do tempo.',effect:{id:'d3b',name:'Acúmulo lento',type:'buff',cycles:2500,insight:10,biomass:20}}]},
+{id:'d4',title:'Mutação explosiva',stem:'A diversidade está baixa. Você pode injetar um pulso de alta mutação — cria linhagens novas, mas pode destruir as eficientes.',choices:[{label:'Pulso mutacional',desc:'Alta mutação por 2000 ciclos.',effect:{id:'d4a',name:'Instabilidade genômica',type:'debuff',cycles:2000,mutation:.12,entropy:8}},{label:'Preservar linhagem',desc:'Mutação baixa — conserva o que funciona.',effect:{id:'d4b',name:'Conservação genética',type:'buff',cycles:2200,mutation:-.025,insight:10}}]},
+{id:'d5',title:'Velocidade ou estabilidade',stem:'O mundo está lento (pace < 1.5). Você pode aceitar boost de ritmo ao custo de pressão maior, ou conservar o equilíbrio.',choices:[{label:'Acelerar',desc:'Ritmo +1.0 por 1800 ciclos, pressão +0.2.',effect:{id:'d5a',name:'Ritmo acelerado',type:'buff',cycles:1800,pace:1.0,pressure:.2}},{label:'Conservar',desc:'Ritmo atual, pressão -0.1 por 2000 ciclos.',effect:{id:'d5b',name:'Equilíbrio conservado',type:'neutral',cycles:2000,pressure:-.1,insight:8}}]},
+{id:'d6',title:'Purga ou adaptação',stem:'Agentes com metabolismo alto dominam mas consomem recursos rápido. Você pode forçar pressão ou aguardar seleção natural.',choices:[{label:'Forçar pressão',desc:'Pressão +0.35 por 1500 ciclos — seleciona metabolismo baixo.',effect:{id:'d6a',name:'Pressão metabólica',type:'debuff',cycles:1500,pressure:.35}},{label:'Aguardar seleção',desc:'Reduz comida — seleção age mais devagar.',effect:{id:'d6b',name:'Escassez gradual',type:'neutral',cycles:2000,food:-60,pressure:.08}}]},
+{id:'d7',title:'Caos fértil',stem:'Alta entropia está suprimindo reprodução. Você pode drenar entropia pagando insight, ou deixar o sistema encontrar equilíbrio.',choices:[{label:'Drenar entropia',desc:'-25 entropia, custa 30 insight.',effect:{id:'d7a',name:'Drenagem entrópica',type:'buff',entropy:-25,insight:-30}},{label:'Equilíbrio natural',desc:'Aguarda — entropia cai sozinha com o tempo.',effect:{id:'d7b',name:'Paciência sistêmica',type:'neutral',cycles:3000,pressure:-.06}}]},
+{id:'d8',title:'Floresta ou clareira',stem:'Os agentes estão aglomerados num canto do mundo. Você pode forçar dispersão ou deixar o clustering emergente continuar.',choices:[{label:'Forçar dispersão',desc:'Adiciona veneno na área de cluster.',effect:{id:'d8a',name:'Dispersão forçada',type:'neutral',poison:40,entropy:5}},{label:'Deixar emergir',desc:'O cluster pode ser uma estratégia adaptativa — observe.',effect:{id:'d8b',name:'Emergência preservada',type:'buff',cycles:2000,insight:12,pressure:-.05}}]},
+];
+
+const SOCRATES=[
+{id:'soc1',title:'Memória e hábito',stem:'Agentes com memória alta seguem seus próprios rastros. Isso os torna mais eficientes ou mais presos a padrões do passado?',choices:[{label:'Mais eficientes',desc:'Memória é recurso — otimiza busca.',effect:{id:'soc1a',name:'Eficiência mnemônica',type:'buff',cycles:1800,pace:.2}},{label:'Presos ao passado',desc:'Memória é risco — cristaliza rotas subótimas.',effect:{id:'soc1b',name:'Ruptura de hábito',type:'neutral',cycles:2000,mutation:.04,insight:10}},{label:'Depende do ambiente',desc:'A resposta emerge do contexto.',effect:{id:'soc1c',name:'Contexto determina',type:'neutral',cycles:1500,pace:.1,entropy:-3}}]},
+{id:'soc2',title:'Ordem sem coordenação',stem:'Padrões globais emergem sem nenhum agente "saber" do todo. Isso é mais parecido com ordem, acidente ou inevitabilidade?',choices:[{label:'Ordem',desc:'Leis locais produzem coerência — há estrutura.',effect:{id:'soc2a',name:'Ordem emergente',type:'buff',cycles:2000,entropy:-8,diversity:10}},{label:'Acidente',desc:'Poderia ter sido diferente — é contingência.',effect:{id:'soc2b',name:'Acidente produtivo',type:'neutral',cycles:1800,mutation:.035,food:30}},{label:'Inevitabilidade',desc:'Dadas as regras, não havia outro resultado possível.',effect:{id:'soc2c',name:'Determinismo local',type:'neutral',cycles:2200,pressure:-.05,insight:8}}]},
+{id:'soc3',title:'Fitness e sobrevivência',stem:'"O mais apto sobrevive." Em um mundo que muda constantemente, o que é aptidão?',choices:[{label:'Eficiência atual',desc:'Aptidão é maximizar ganho no ambiente presente.',effect:{id:'soc3a',name:'Otimização presente',type:'buff',cycles:1900,pressure:-.08,food:40}},{label:'Plasticidade',desc:'Aptidão é capacidade de mudar quando o ambiente muda.',effect:{id:'soc3b',name:'Plasticidade genética',type:'buff',cycles:2100,mutation:.03,diversity:12}},{label:'Persistência',desc:'Aptidão é sobreviver sem precisar mudar.',effect:{id:'soc3c',name:'Conservadorismo robusto',type:'neutral',cycles:2000,mutation:-.02,insight:8}}]},
+{id:'soc4',title:'Ruído ou sinal',stem:'A deriva sistêmica (worldDrift) altera o mundo aleatoriamente. O ruído é obstáculo ou parte essencial do jogo?',choices:[{label:'Obstáculo',desc:'Ruído dificulta — reduza-o.',effect:{id:'soc4a',name:'Redução de ruído',type:'buff',cycles:2000,mutation:-.025,pressure:-.06}},{label:'Essencial',desc:'Sem ruído, não há surpresa — o jogo seria trivial.',effect:{id:'soc4b',name:'Ruído amplificado',type:'neutral',cycles:1800,mutation:.04}},{label:'Indiferente',desc:'Ruído existe — você se adapta, não o controla.',effect:{id:'soc4c',name:'Adaptação ao ruído',type:'neutral',cycles:2200,insight:10,entropy:-5}}]},
+{id:'soc5',title:'Limite do modelo',stem:'Esta simulação não modela doenças, simbiose, epigenética ou linguagem. Ela ainda é útil para pensar sobre evolução real?',choices:[{label:'Sim — abstrações revelam princípios',desc:'Modelos incompletos podem iluminar mecanismos.',effect:{id:'soc5a',name:'Abstração produtiva',type:'buff',cycles:2000,insight:14,diversity:8}},{label:'Não — simplicidade distorce',desc:'Detalhes omitidos podem ser os que importam.',effect:{id:'soc5b',name:'Ceticismo crítico',type:'neutral',cycles:1800,entropy:-6,mutation:.02}},{label:'Depende da pergunta',desc:'A utilidade de um modelo é relativa ao problema.',effect:{id:'soc5c',name:'Relatividade epistêmica',type:'neutral',cycles:2100,insight:10,pace:.15}}]},
+{id:'soc6',title:'Agência e determinismo',stem:'Os agentes "escolhem" para onde vão. Mas são equações determinísticas com ruído. Há agência real aqui?',choices:[{label:'Não há agência — só física',desc:'Toda "escolha" é consequência de estado e equações.',effect:{id:'soc6a',name:'Determinismo físico',type:'neutral',cycles:2000,mutation:-.02,entropy:-6}},{label:'Agência emerge da complexidade',desc:'A distinção importa menos do que o comportamento observável.',effect:{id:'soc6b',name:'Pragmatismo emergente',type:'buff',cycles:2200,insight:12,diversity:10}},{label:'A pergunta está mal formulada',desc:'Agência e determinismo não são mutuamente exclusivos.',effect:{id:'soc6c',name:'Reformulação conceitual',type:'buff',cycles:1900,insight:14,entropy:-4}}]},
+{id:'soc7',title:'Extinção como fracasso',stem:'A população se extinguiu. Isso é falha do sistema ou resultado válido dentro das regras?',choices:[{label:'Falha — o jogo deveria evitar',desc:'Extinção indica desbalanceamento a corrigir.',effect:{id:'soc7a',name:'Reflexo crítico',type:'neutral',cycles:2000,pressure:-.1,food:50}},{label:'Resultado válido',desc:'As regras permitem extinção — é um estado possível.',effect:{id:'soc7b',name:'Aceitação do limite',type:'neutral',cycles:2200,entropy:-8,insight:10}},{label:'Depende da causa',desc:'Extinção por bug é falha; por ambiente, é narrativa.',effect:{id:'soc7c',name:'Diagnóstico causal',type:'buff',cycles:1800,insight:12,biomass:30}}]},
+];
+
+const EPICS=[
+{id:'ep1',title:'Colapso de linhagem',body:'Uma falha epigenética varreu o gene de memória de 40% da população. Agentes param de seguir rastros estabelecidos.',effect:{id:'ep1',name:'Colapso mnêmico',type:'epic',zeroGene:'memory',zeroFrac:.4,cycles:0}},
+{id:'ep2',title:'Glaciação',body:'Temperatura caiu. Energia de cada alimento cai 40% por 5000 ciclos. Só agentes com metabolismo baixo sobreviverão.',effect:{id:'ep2',name:'Glaciação',type:'epic',cycles:5000,pressure:.22,foodEnergyMul:.6}},
+{id:'ep3',title:'Floração épica',body:'Pulso de nutrientes inundou o mundo. Capacidade aumenta por 3000 ciclos, mas entropia acumula 2× mais rápido.',effect:{id:'ep3',name:'Floração épica',type:'epic',cycles:3000,capacity:220,entropyMul:2.0,food:150}},
+{id:'ep4',title:'Gargalo fundador',body:'Catástrofe eliminou 80% da população. Sobreviventes ganham energia extra, mas diversidade colapsou.',effect:{id:'ep4',name:'Gargalo fundador',type:'epic',killFrac:.80,survivorEnergy:45,cycles:0}},
+{id:'ep5',title:'Parasita retroviral',body:'Parasita retroviral surgiu. Responda corretamente para imunizar o mundo. Erro → genes sofrem drift massivo.',quiz:true,epicReward:{id:'ep5r',name:'Imunidade adaptativa',type:'buff',cycles:3500,pressure:-.12,mutation:-.04,insight:25},epicPenalty:{id:'ep5p',name:'Infecção retroviral',type:'epic',cycles:350,mutation:.22,pressure:.3}},
+];
+
+const WORLD_EVENTS=[
+{id:'we1',name:'Floração espontânea',type:'world',body:'Ambiente entrou em fase fértil. Comida e ritmo aumentam brevemente.',effect:{id:'we1',name:'Floração',type:'buff',cycles:2400,pace:.22,pressure:-.07,food:100}},
+{id:'we2',name:'Contração ecológica',type:'world',body:'Oferta de energia caiu. Reprodução fica mais cara.',effect:{id:'we2',name:'Escassez',type:'debuff',cycles:2100,pressure:.20,entropy:8}},
+{id:'we3',name:'Tempestade mutacional',type:'world',body:'Variação genética sobe. Pode abrir linhagens novas ou destruir eficiência.',effect:{id:'we3',name:'Mutação alta',type:'neutral',cycles:2200,mutation:.072,insight:5}},
+{id:'we4',name:'Relógio viscoso',type:'world',body:'O mundo desacelerou. Menos ciclos por frame.',effect:{id:'we4',name:'Ritmo baixo',type:'debuff',cycles:1800,pace:-.85,pressure:-.04}},
+{id:'we5',name:'Onda de veneno',type:'world',body:'Toxinas brotaram. Cautela torna-se crucial.',effect:{id:'we5',name:'Onda tóxica',type:'debuff',cycles:1600,poison:80,pressure:.1}},
+{id:'we6',name:'Pulso de energia',type:'world',body:'Comida abundante e pressão baixa — janela de crescimento.',effect:{id:'we6',name:'Pulso energético',type:'buff',cycles:1900,food:80,pressure:-.1,pace:.15}},
+];
+
+/* ═══ SISTEMA DE EVENTOS ═══ */
+function getEventWeights(){
+  const ec=world.eventCount;
+  const p=prestige.runCount||0;
+  // Prestígio 2+: quiz passa a ser o evento dominante
+  if(p>=2){
+    if(ec>=8)return{world:12,quiz:42,dilemma:22,socrates:12,epic:12};
+    if(ec>=4)return{world:18,quiz:48,dilemma:18,socrates:10,epic:6};
+    return          {world:25,quiz:52,dilemma:12,socrates:8, epic:3};
+  }
+  // Prestígio 0-1: distribuição original (quiz acessível mas não dominante)
+  if(ec>=8)return{world:20,quiz:28,dilemma:22,socrates:15,epic:15};
+  if(ec>=4)return{world:30,quiz:35,dilemma:18,socrates:12,epic:5};
+  return          {world:40,quiz:40,dilemma:10,socrates:8, epic:2};
+}
+function pickWeighted(w){
+  const total=Object.values(w).reduce((a,b)=>a+b,0);let r=Math.random()*total;
+  for(const[k,v]of Object.entries(w)){r-=v;if(r<=0)return k;}return Object.keys(w)[0];
+}
+function triggerEvent(forceQuiz=false){
+  if(modalOpen)return;
+  world.eventCount++;scheduleNextEvent(false);
+  if(forceQuiz){openQuiz();return;}
+  const type=pickWeighted(getEventWeights());
+  if(type==='epic'){
+    const ep=EPICS[Math.floor(Math.random()*EPICS.length)];
+    if(ep.quiz){openEpicQuiz(ep);return;}
+    addEffect(ep.effect);logEntry(ep.title,ep.body,'type-epic');
+    scheduleNextEvent(true); // encadeamento rápido após épico
+    return;
+  }
+  if(type==='quiz'){openQuiz();return;}
+  if(type==='dilemma'){openDilemma();return;}
+  if(type==='socrates'){openSocrates();return;}
+  const we=WORLD_EVENTS[Math.floor(Math.random()*WORLD_EVENTS.length)];
+  addEffect(we.effect);logEntry(we.name,we.body,'type-world');
+}
+
+/* ═══ QUIZ — 3 estados ═══ */
+let quizState={q:null,shuffled:[],correctIdx:-1,phase:'answer',epicData:null,isTutorial:false};
+let quizTimerInterval=null,quizTimerSec=0;
+
+function getQuizByDifficulty(){
+  const pd=prestigeDiff();
+  const ecDif=world.eventCount<4?1:world.eventCount<9?2:3;
+  const maxDif=Math.min(3,Math.max(ecDif,pd.quizDifMax));
+  // hardEventChance: inclui questões de dificuldade máxima com maior frequência
+  const pool=QUESTIONS.filter(q=>q.dif<=maxDif);
+  const hardPool=QUESTIONS.filter(q=>q.dif===maxDif);
+  // Se hardEventChance > 1, duplicamos entradas hard para aumentar a probabilidade
+  const extra=pd.hardEventChance>1?Math.floor((pd.hardEventChance-1)*hardPool.length):0;
+  const finalPool=[...pool,...hardPool.slice(0,extra)];
+  return finalPool[Math.floor(Math.random()*finalPool.length)];
+}
+function shuffleAnswers(q){
+  const idx=q.opts.map((t,i)=>({text:t,orig:i}));
+  for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
+  return{shuffled:idx.map(a=>a.text),correctIdx:idx.findIndex(a=>a.orig===q.cor)};
+}
+function openQuiz(epicData=null){
+  pauseGame();
+  const q=getQuizByDifficulty();
+  const{shuffled,correctIdx}=shuffleAnswers(q);
+  quizState={q,shuffled,correctIdx,phase:'answer',epicData};
+  renderModal('quiz',q);
+  renderQuizPhaseAnswer();
+}
+function openEpicQuiz(ep){openQuiz({epic:ep});}
+
+function renderQuizPhaseAnswer(){
+  const q=quizState.q;
+  const catMap={'algoritmos':'Algoritmos','estruturas':'Estruturas de Dados','complexidade':'Complexidade','sistemas':'Sistemas Complexos','genetica':'Algoritmos Genéticos','probabilidade':'Probabilidade','o-jogo':'O Próprio Jogo','socrates':'Filosofia'};
+  const catLabel=catMap[q.cat]||q.cat;
+  const difLabel='★'.repeat(q.dif)+'☆'.repeat(3-q.dif);
+  const body=document.getElementById('modal-body');
+  body.innerHTML=`
+    <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+      <span class="mini" style="color:var(--cyan)">${catLabel}</span>
+      <span class="mini" style="color:var(--yellow)">${difLabel}</span>
+    </div>
+    <p class="modal-question">${q.stem}</p>
+    <div class="quiz-timer-bar"><div class="quiz-timer-fill" id="qtf" style="width:100%"></div></div>
+    <div class="modal-choices" id="modal-choices">
+      ${quizState.shuffled.map((t,i)=>`<button class="modal-choice" data-idx="\${i}" onclick="answerQuiz(${i})">${t}</button>`).join('')}
+    </div>`;
+  // Sem timer em tutorial e em prestígios 0-1
+  const useTimer=(prestige.runCount||0)>=2&&!quizState.isTutorial;
+  quizTimerSec=CFG.QUIZ_TIMER_SEC;
+  clearInterval(quizTimerInterval);
+  if(!useTimer){const fill=document.getElementById('qtf');if(fill)fill.parentElement.style.display='none';return;}
+  quizTimerInterval=setInterval(()=>{
+    quizTimerSec--;
+    const pct=Math.max(0,quizTimerSec/CFG.QUIZ_TIMER_SEC*100);
+    const fill=document.getElementById('qtf');
+    if(fill){fill.style.width=pct+'%';fill.style.background=pct<30?'var(--red)':pct<60?'var(--yellow)':'linear-gradient(90deg,var(--cyan),var(--green))';}
+    if(quizTimerSec<=0){clearInterval(quizTimerInterval);answerQuiz(-1);}
+  },1000);
+}
+
+function answerQuiz(idx){
+  if(quizState.phase!=='answer')return;
+  clearInterval(quizTimerInterval);
+  quizState.phase='explanation';
+  const q=quizState.q,correct=idx===quizState.correctIdx;
+  // Determinar efeito com penalidade progressiva por prestígio
+  let _baseEff=correct?q.reward:q.penalty;
+  let eff=_baseEff;
+  if(!correct&&quizState.isTutorial){
+    eff={id:'tut-noop',name:'',type:'neutral',cycles:0};
+  } else if(!correct){
+    const p=prestige.runCount||0;
+    if(p<2) eff={..._baseEff,cycles:Math.floor((_baseEff.cycles||0)*0.5)};
+  }
+  // Destaca botões
+  document.querySelectorAll('.modal-choice').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===quizState.correctIdx)b.classList.add('correct');
+    else if(i===idx&&!correct)b.classList.add('wrong');
+  });
+  const timerBar=document.querySelector('.quiz-timer-bar');if(timerBar)timerBar.style.display='none';
+  // Aplica efeito
+  if(quizState.epicData?.epic){
+    const ep=quizState.epicData.epic;
+    addEffect(correct?ep.epicReward:ep.epicPenalty);
+    logEntry(ep.title+(correct?' — imunizado':' — infectado'),ep.body,'type-epic');
+  } else {
+    addEffect(eff);
+    if(correct){
+      const dm=1+(prestige.perms.directedMutation||0)*0.5;
+      idle.insight+=35*dm;
+      // Prestígio 2+: acerto abre janela de upgrade com desconto
+      if((prestige.runCount||0)>=2){
+        quizUpgradeWindow=QUIZ_WINDOW_CYCLES;
+        showToast('Janela de calibração (+35 insight)','Upgrades de insight -30% por '+QUIZ_WINDOW_CYCLES+' ciclos. Quiz é a principal fonte de insight avançado.');
+      }
+    }
+    runStats.eventsResolved++;
+  if(correct)runStats.quizCorrect++;
+  runStats.quizTotal++;
+  if(!correct&&!quizState.isTutorial)runStats.quizWrong=(runStats.quizWrong||0)+1;
+  logEntry(correct?'Resposta correta':'Resposta errada',eff.name,correct?'':'type-warn');
+  }
+  // Fase 2: explicação
+  setTimeout(()=>{
+    const body=document.getElementById('modal-body');
+    const expDiv=document.createElement('div');expDiv.className='modal-explanation';
+    expDiv.innerHTML=`<strong style="color:var(--mint)">Explicação:</strong> ${q.exp}`;
+    body.appendChild(expDiv);
+    const effLbl=document.createElement('div');
+    effLbl.className='modal-effect-label '+(correct?'buff':'debuff');
+    effLbl.textContent=(correct?'✓ Boost: ':'✗ Castigo: ')+(quizState.epicData?.epic?(correct?quizState.epicData.epic.epicReward.name:quizState.epicData.epic.epicPenalty.name):eff.name);
+    body.appendChild(effLbl);
+    const btn=document.createElement('button');btn.className='modal-continue';btn.textContent='Entendi — fechar';
+    btn.onclick=closeModal;body.appendChild(btn);btn.focus();
+    quizState.phase='done';
+  },350);
+}
+
+/* ═══ DILEMA ═══ */
+let currentDilemma=null;
+function openDilemma(){
+  pauseGame();
+  currentDilemma=DILEMMAS[Math.floor(Math.random()*DILEMMAS.length)];
+  renderModal('dilemma',currentDilemma);
+  document.getElementById('modal-body').innerHTML=`
+    <p class="modal-question">${currentDilemma.stem}</p>
+    <div class="modal-choices">
+      ${currentDilemma.choices.map((c,i)=>`<button class="modal-choice" onclick="chooseDilemma(\${i})"><strong style="display:block;margin-bottom:.18rem">${c.label}</strong><span style="font-size:.82rem;color:var(--muted)">${c.desc}</span></button>`).join('')}
+    </div>
+    <p class="mini" style="color:var(--amber)">Não há resposta certa — há consequências.</p>`;
+}
+function chooseDilemma(idx){
+  if(!currentDilemma)return;
+  const c=currentDilemma.choices[idx];
+  document.querySelectorAll('.modal-choice').forEach(b=>b.disabled=true);
+  addEffect(c.effect);
+  runStats.eventsResolved++;
+  logEntry('Dilema: '+c.label,c.desc,'type-dilemma');
+  const body=document.getElementById('modal-body');
+  const lbl=document.createElement('div');lbl.className='modal-effect-label choice';lbl.textContent='Efeito: '+c.effect.name;body.appendChild(lbl);
+  const btn=document.createElement('button');btn.className='modal-continue';btn.textContent='Confirmar escolha';btn.onclick=closeModal;body.appendChild(btn);btn.focus();
+}
+
+/* ═══ SÓCRATES ═══ */
+let currentSocrates=null;
+function openSocrates(){
+  pauseGame();
+  currentSocrates=SOCRATES[Math.floor(Math.random()*SOCRATES.length)];
+  renderModal('socrates',currentSocrates);
+  document.getElementById('modal-body').innerHTML=`
+    <p class="modal-question">${currentSocrates.stem}</p>
+    <div class="modal-choices">
+      ${currentSocrates.choices.map((c,i)=>`<button class="modal-choice" onclick="chooseSocrates(\${i})"><strong style="display:block;margin-bottom:.18rem">${c.label}</strong><span style="font-size:.82rem;color:var(--muted)">${c.desc}</span></button>`).join('')}
+    </div>
+    <p class="mini" style="color:var(--violet)">Cada escolha tem consequências — nenhuma é errada.</p>`;
+}
+function chooseSocrates(idx){
+  if(!currentSocrates)return;
+  const c=currentSocrates.choices[idx];
+  document.querySelectorAll('.modal-choice').forEach(b=>b.disabled=true);
+  addEffect(c.effect);
+  runStats.eventsResolved++;
+  logEntry('Sócrates: '+c.label,c.desc,'type-socrates');
+  const body=document.getElementById('modal-body');
+  const lbl=document.createElement('div');lbl.className='modal-effect-label choice';lbl.textContent='Perspectiva: '+c.label;body.appendChild(lbl);
+  const btn=document.createElement('button');btn.className='modal-continue';btn.textContent='Continuar';btn.onclick=closeModal;body.appendChild(btn);btn.focus();
+}
+
+/* ═══ MODAL HELPERS ═══ */
+function renderModal(type,data){
+  modalOpen=true;
+  const titles={quiz:'Calibração computacional',dilemma:data.title||'Dilema',socrates:data.title||'Reflexão',epic:data.title||'Evento épico'};
+  const typeLabels={quiz:'Quiz',dilemma:'Dilema',socrates:'Sócrates',epic:'Épico'};
+  document.getElementById('modal-title').textContent=titles[type];
+  const tl=document.getElementById('modal-type-label');tl.textContent=typeLabels[type];tl.className='modal-type-label '+type;
+  document.getElementById('modal-box').className='modal '+type+'-modal';
+  const bd=document.getElementById('modal-backdrop');bd.classList.add('open');bd.setAttribute('aria-hidden','false');
+}
+function closeModal(){
+  clearInterval(quizTimerInterval);
+  document.getElementById('modal-backdrop').classList.remove('open');
+  document.getElementById('modal-backdrop').setAttribute('aria-hidden','true');
+  document.getElementById('modal-body').innerHTML='';
+  modalOpen=false;quizState={q:null,shuffled:[],correctIdx:-1,phase:'answer',epicData:null,isTutorial:false};
+  currentDilemma=null;currentSocrates=null;
+  resumeGame();
+}
+let wasRunning=false;
+function pauseGame(){wasRunning=running;running=false;document.getElementById('btn-pause').textContent='Rodar';}
+function resumeGame(){running=wasRunning;document.getElementById('btn-pause').textContent=running?'Pausar':'Rodar';}
+
+/* ═══ PERSISTÊNCIA LEVE ═══ */
+const SAVE_KEY='micromundo_v46';
+const SAVE_KEY_LEGACY='micromundo_v4'; // migra prestige do save anterior
+function saveState(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({upgrades,eventCount:world.eventCount,elapsedMs,remainingEventMs:Math.max(0,world.nextEventMs-elapsedMs),prestige,pendingBiome,onboardingShown:onboarding.shown,firstQuizDone:onboarding.firstQuizDone}));}catch(e){}}
+function loadState(){try{
+  // Migração v3→v4: aproveitar só prestige e onboarding, descartar estado de run
+  if(!localStorage.getItem(SAVE_KEY)&&localStorage.getItem(SAVE_KEY_LEGACY)){
+    try{
+      const old=JSON.parse(localStorage.getItem(SAVE_KEY_LEGACY));
+      if(old.prestige){Object.assign(prestige,old.prestige);if(!prestige.perms)prestige.perms={};}
+      if(old.onboardingShown)onboarding.shown=old.onboardingShown;
+      if(old.firstQuizDone)onboarding.firstQuizDone=old.firstQuizDone;
+      if(old.pendingBiome)pendingBiome=old.pendingBiome;
+      saveState(); // escreve já no slot v4
+    }catch(e2){}
+    return; // upgrades e estado de run começam do zero na v4
+  }
+  const raw=localStorage.getItem(SAVE_KEY);if(!raw)return;const d=JSON.parse(raw);if(d.upgrades)Object.assign(upgrades,d.upgrades);if(d.eventCount)world.eventCount=d.eventCount;if(d.elapsedMs)elapsedMs=d.elapsedMs;if(d.remainingEventMs!==undefined)world.nextEventMs=elapsedMs+d.remainingEventMs;if(d.prestige){Object.assign(prestige,d.prestige);if(!prestige.perms)prestige.perms={};}if(d.pendingBiome)pendingBiome=d.pendingBiome;if(d.onboardingShown)onboarding.shown=d.onboardingShown;if(d.firstQuizDone)onboarding.firstQuizDone=d.firstQuizDone;}catch(e){}}
+
+/* ═══ UI ═══ */
+const canvas=document.getElementById('world');
+const ctx=canvas.getContext('2d');
+const chart=document.getElementById('chart');
+const chartCtx=chart.getContext('2d');
+const fmt=n=>Math.round(n).toLocaleString('pt-BR');
+
+function logEntry(title,body,cls=''){
+  const div=document.createElement('div');div.className='log-entry '+cls;
+  div.innerHTML='<strong>'+title+'</strong> — '+body;
+  document.getElementById('log').prepend(div);
+  while(document.getElementById('log').children.length>22)document.getElementById('log').lastChild.remove();
+}
+function showToast(title,body){
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML='<strong>'+title+'</strong>'+body;
+  document.getElementById('toast-wrap').prepend(t);
+  setTimeout(()=>t.remove(),4500);
+}
+
+function renderUpgrades(){
+  document.getElementById('upgrades-list').innerHTML=upgradeDefs.map(d=>{
+    const lv=upgrades[d.id],cap=runUpgradeCap(d),max=lv>=d.max,atCap=lv>=cap&&!max;
+    const cost=upgradeCost(d),ok=!max&&!atCap&&canBuy(d);
+    const price=max?'máximo':atCap?'teto desta run (P'+((prestige.runCount||0))+'→ascenda)':fmt(cost)+' '+currLabel(d.currency);
+    return`<button class="upgrade" data-id="${d.id}" type="button" ${ok?'':'disabled'}><span><strong>${d.name}</strong><span>${d.desc}</span><em>${price}</em></span><b class="level-pill">${lv}</b></button>`;
+  }).join('');
+  document.getElementById('upgrades-list').querySelectorAll('[data-id]').forEach(b=>b.addEventListener('click',()=>buyUpgrade(b.dataset.id)));
+}
+
+function renderEffects(){
+  const p=document.getElementById('effects-panel');
+  const windowHtml=quizUpgradeWindow>0&&(prestige.runCount||0)>=2
+    ?'<div class="effect buff"><strong>Janela de calibração</strong><span class="effect-timer">'+quizUpgradeWindow+' ciclos · insight -30%</span></div>'
+    :'';
+  if(!effects.length){p.innerHTML=windowHtml||'<div class="effect neutral"><strong>sem efeito ativo</strong><span class="effect-timer">mundo basal</span></div>';return;}
+  p.innerHTML=effects.map(e=>`<div class="effect ${e.type||'neutral'}"><strong>${e.name}</strong><span class="effect-timer">${fmt(e.cycles)} ciclos</span></div>`).join('');
+}
+
+function updateUI(){
+  updatePrestigeUI();
+  // Prévia de ascensão em tempo real
+  const prev=document.getElementById('prestige-preview');
+  if(prev) prev.textContent=runStats.labMode?'bloqueado':calcMemoria()+' ME';
+  const biomeEl=document.getElementById('prestige-biome');
+  if(biomeEl) biomeEl.textContent=biomeLabel(pendingBiome);
+  const hEl=document.getElementById('active-heritage-label');
+  if(hEl){const ah=getActiveHeritage();hEl.textContent=ah?ah.name:'—'}
+  const avgE=agents.length?agents.reduce((s,a)=>s+a.energy,0)/agents.length:0;
+  const avgA=agents.length?agents.reduce((s,a)=>s+a.age,0)/agents.length:0;
+  const div=diversity();
+  document.getElementById('tc-cycle').textContent=fmt(cycle);
+  document.getElementById('tc-pop').textContent=fmt(agents.length);
+  document.getElementById('tc-energy').textContent=fmt(avgE);
+  document.getElementById('tc-div').textContent=fmt(div);
+  document.getElementById('s-births').textContent=fmt(births);
+  document.getElementById('s-deaths').textContent=fmt(deaths);
+  document.getElementById('s-age').textContent=fmt(avgA);
+  document.getElementById('s-food').textContent=fmt(foods.length);
+  document.getElementById('s-poison').textContent=fmt(poisons.length);
+  document.getElementById('s-pred').textContent=fmt(predators.length);
+  document.getElementById('r-biomass').textContent=fmt(idle.biomass);
+  document.getElementById('r-insight').textContent=idle.insight<100?idle.insight.toFixed(1):fmt(idle.insight);
+  const _tier=entropyStress().tier;
+  const _entropyEl=document.getElementById('r-entropy');
+  _entropyEl.textContent=idle.entropy.toFixed(0)+'%';
+  _entropyEl.style.color=_tier==='critical'?'var(--red)':_tier==='danger'?'var(--amber)':_tier==='warning'?'var(--yellow)':'var(--mint)';
+  document.getElementById('r-capacity').textContent=fmt(carryingCapacity());
+  document.getElementById('ws-pace').textContent=effectivePace().toFixed(1)+'x';
+  document.getElementById('ws-mut').textContent=Math.round(effectiveMutation()*100)+'%';
+  document.getElementById('ws-pres').textContent=effectivePressure().toFixed(2);
+  document.getElementById('ws-timer').textContent=fmtCountdown(world.nextEventMs);
+  document.getElementById('state-label').textContent=running?'rodando':'pausado';
+  renderEffects();updateAgentPanel();renderUpgrades();drawChart();
+}
+
+function geneRow(label,value){
+  const pct=Math.round(Math.max(0,Math.min(1,(value+1)/2.8))*100);
+  return`<div class="gene"><span>${label}</span><div class="bar"><i style="width:${pct}%"></i></div><span>${value.toFixed(2)}</span></div>`;
+}
+function updateAgentPanel(){
+  const a=agents.find(x=>x.id===selectedId);
+  const panel=document.getElementById('agent-panel'),idEl=document.getElementById('agent-id');
+  if(!a){idEl.textContent='nenhum';panel.innerHTML='<p class="mini">Clique num agente verde para inspecionar genes.</p>';return;}
+  idEl.textContent='#'+a.id;
+  panel.innerHTML=`<div class="stats-grid"><div class="stat"><span>energia</span><strong>${fmt(a.energy)}</strong></div><div class="stat"><span>idade</span><strong>${fmt(a.age)}</strong></div><div class="stat"><span>filhos</span><strong>${fmt(a.children)}</strong></div><div class="stat"><span>última comida</span><strong>${fmt(cycle-a.lastMeal)}</strong></div></div>`+
+    geneRow('curiosidade',a.g.curiosity)+geneRow('cautela',a.g.caution)+geneRow('social',a.g.social)+geneRow('metabolismo',a.g.metabolism)+geneRow('velocidade',a.g.speed)+geneRow('memória',a.g.memory);
+}
+
+function drawWorld(){
+  const cw=canvas.width,ch=canvas.height,sx=cw/CFG.W,sy=ch/CFG.H;
+  ctx.fillStyle='#050e0b';ctx.fillRect(0,0,cw,ch);
+  ctx.globalAlpha=.5;
+  for(let y=0;y<CFG.H;y+=2)for(let x=0;x<CFG.W;x+=2){const t=trails[y*CFG.W+x];if(t>4){ctx.fillStyle='rgba(93,207,255,'+Math.min(.3,t/360)+')';ctx.fillRect(x*sx,y*sy,sx*2,sy*2);}}
+  ctx.globalAlpha=1;
+  ctx.strokeStyle='rgba(168,255,210,.04)';ctx.lineWidth=1;
+  for(let x=0;x<=CFG.W;x+=10){ctx.beginPath();ctx.moveTo(x*sx,0);ctx.lineTo(x*sx,ch);ctx.stroke();}
+  for(let y=0;y<=CFG.H;y+=10){ctx.beginPath();ctx.moveTo(0,y*sy);ctx.lineTo(cw,y*sy);ctx.stroke();}
+  ctx.fillStyle='#ffd05c';for(const f of foods){ctx.beginPath();ctx.arc(f.x*sx,f.y*sy,Math.max(2,sx*.32),0,Math.PI*2);ctx.fill();}
+  ctx.fillStyle='#ff5f72';for(const p of poisons){ctx.beginPath();ctx.arc(p.x*sx,p.y*sy,Math.max(1.8,sx*.27),0,Math.PI*2);ctx.fill();}
+  for(const a of agents){
+    const eh=Math.max(0,Math.min(1,a.energy/160));
+    ctx.fillStyle=`rgb(${Math.round(90+90*(1-eh))},${Math.round(175+65*eh)},${Math.round(120+60*a.g.memory)})`;
+    ctx.beginPath();ctx.arc(a.x*sx,a.y*sy,Math.max(3,sx*(.3+a.g.speed*.08)),0,Math.PI*2);ctx.fill();
+    if(a.id===selectedId){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(a.x*sx,a.y*sy,Math.max(8,sx*.88),0,Math.PI*2);ctx.stroke();}
+  }
+  ctx.fillStyle='#b08cff';
+  for(const p of predators){ctx.beginPath();ctx.moveTo(p.x*sx,p.y*sy-7);ctx.lineTo(p.x*sx+7,p.y*sy+6);ctx.lineTo(p.x*sx-7,p.y*sy+6);ctx.closePath();ctx.fill();}
+}
+
+function drawChart(){
+  const w=chart.width,h=chart.height;
+  chartCtx.fillStyle='#020a08';chartCtx.fillRect(0,0,w,h);
+  chartCtx.strokeStyle='rgba(168,255,210,.09)';chartCtx.lineWidth=1;
+  for(let y=20;y<h;y+=22){chartCtx.beginPath();chartCtx.moveTo(0,y);chartCtx.lineTo(w,y);chartCtx.stroke();}
+  if(history.length<2)return;
+  const line=(key,max,color)=>{
+    chartCtx.strokeStyle=color;chartCtx.lineWidth=2;chartCtx.beginPath();
+    history.forEach((pt,i)=>{const x=i/(history.length-1)*w,y=h-Math.max(0,Math.min(1,pt[key]/max))*(h-12)-6;i?chartCtx.lineTo(x,y):chartCtx.moveTo(x,y);});
+    chartCtx.stroke();
+  };
+  line('p',CFG.MAX_AGENTS,'#5ee896');line('d',120,'#5dcfff');
+}
+
+/* ═══ INIT + LOOP ═══ */
+
+/* ═══ AUDIT MODE — dev only ═══ */
+function auditContent(){
+  var issues=[];
+  var knownFields=['id','name','type','cycles','pace','mutation','pressure','capacity',
+    'food','poison','biomass','insight','entropy','diversity','killFrac','zeroGene',
+    'zeroFrac','survivorEnergy','foodEnergyMul','entropyMul','epicReward','epicPenalty','quiz'];
+  var allEffects=[];
+  QUESTIONS.forEach(function(q){if(q.reward)allEffects.push(q.reward);if(q.penalty)allEffects.push(q.penalty);});
+  DILEMMAS.forEach(function(d){d.choices.forEach(function(c){if(c.effect)allEffects.push(c.effect);});});
+  SOCRATES.forEach(function(s){s.choices.forEach(function(c){if(c.effect)allEffects.push(c.effect);});});
+  EPICS.forEach(function(e){if(e.effect)allEffects.push(e.effect);if(e.epicReward)allEffects.push(e.epicReward);if(e.epicPenalty)allEffects.push(e.epicPenalty);});
+  WORLD_EVENTS.forEach(function(e){if(e.effect)allEffects.push(e.effect);});
+  allEffects.forEach(function(eff){
+    Object.keys(eff).forEach(function(k){if(!knownFields.includes(k))issues.push('Unknown field: '+k+' in '+eff.id);});
+    // food:-N e poison:-N sao intencionais e tratados por applyResourceDelta -- nao sao issues
+  });
+  QUESTIONS.forEach(function(q){
+    if(!q.opts||q.opts.length!==4)issues.push('Q '+q.id+': opts.length='+( q.opts&&q.opts.length));
+    if(q.cor<0||q.cor>3)issues.push('Q '+q.id+': cor out of range '+q.cor);
+    if(!q.exp||q.exp.length<10)issues.push('Q '+q.id+': missing explanation');
+    if(!q.reward||!q.penalty)issues.push('Q '+q.id+': missing reward or penalty');
+  });
+  DILEMMAS.forEach(function(d){if(!d.choices||d.choices.length!==2)issues.push('Dilemma '+d.id+': choices!=2');});
+  SOCRATES.forEach(function(s){if(!s.choices||s.choices.length!==3)issues.push('Socrates '+s.id+': choices!=3');});
+  var ok=issues.length===0;
+  var msg=ok?('Audit OK | Q:'+QUESTIONS.length+' D:'+DILEMMAS.length+' S:'+SOCRATES.length+' E:'+EPICS.length):issues.length+' issue(s) - ver console';
+  if(!ok)issues.forEach(function(x){console.warn('[AUDIT]',x);});
+  else console.info('[AUDIT]',msg);
+  showToast('Audit',msg);
+  return issues;
+}
+window.audit=auditContent;
+
+
+
+
+/* ═══ ONBOARDING ═══ */
+
+// Quiz tutorial: questão de dif.1, sem timer, castigo suave (só perde bônus)
+const TUTORIAL_QUIZ = {
+  id:'tut1', cat:'o-jogo', dif:1,
+  stem:'Você está observando um mundo vivo. Um agente verde está perto de comida amarela e veneno vermelho. O que determina como ele age?',
+  opts:[
+    'Você clica nele para dar ordens',
+    'Seus genes — curiosidade atrai para comida, cautela repele do veneno',
+    'Uma IA central decide pelo agente',
+    'O agente se move aleatoriamente sem lógica'
+  ],
+  cor:1,
+  exp:'Cada agente age com base nos próprios genes. Curiosidade define o raio de detecção de comida. Cautela define o quanto ele evita veneno. Nenhuma decisão central. Isso é comportamento emergente.',
+  reward:{id:'tut-rw',name:'Primeira observação',type:'buff',cycles:800,food:30,insight:6},
+  penalty:{id:'tut-pw',name:'Oportunidade perdida',type:'neutral',cycles:0}, // sem castigo real
+  isTutorial:true
+};
+
+function triggerTutorialQuiz(){
+  pauseGame();
+  const q=TUTORIAL_QUIZ;
+  const{shuffled,correctIdx}=shuffleAnswers(q);
+  quizState={q,shuffled,correctIdx,phase:'answer',epicData:null,isTutorial:true};
+  // Modal com framing de onboarding
+  modalOpen=true;
+  document.getElementById('modal-title').textContent='Primeiro desafio';
+  const tl=document.getElementById('modal-type-label');tl.textContent='Tutorial';tl.className='modal-type-label quiz';
+  document.getElementById('modal-box').className='modal quiz-modal';
+  document.getElementById('modal-backdrop').classList.add('open');
+  document.getElementById('modal-backdrop').setAttribute('aria-hidden','false');
+
+  const body=document.getElementById('modal-body');
+  body.innerHTML=`
+    <div style="background:rgba(94,232,150,.07);border:1px solid rgba(94,232,150,.2);border-radius:7px;padding:.65rem .8rem">
+      <p style="color:var(--mint);font-weight:700;margin-bottom:.3rem;font-size:.88rem">Seu primeiro evento de calibração</p>
+      <p class="mini">O jogo vai te desafiar assim de tempos em tempos. Acertar gera bônus no mundo. Errar mostra a explicação — e a ideia volta mais tarde, mais difícil.</p>
+    </div>
+    <p class="modal-question">${q.stem}</p>
+    <div class="modal-choices" id="modal-choices">
+      ${quizState.shuffled.map((t,i)=>`<button class="modal-choice" data-idx="${i}" onclick="answerQuiz(${i})">${t}</button>`).join('')}
+    </div>`;
+}
+
+function openSplash(){
+  if(onboarding.shown)return;
+  onboarding.shown=true;
+  saveState();
+  wasRunning=running; running=false; // pausar sem depender de wasRunning externo
+  modalOpen=true;
+  document.getElementById('modal-title').textContent='Primeira vez no MicroMundo';
+  const tl=document.getElementById('modal-type-label');tl.textContent='Boas-vindas';tl.className='modal-type-label quiz';
+  document.getElementById('modal-box').className='modal quiz-modal';
+  document.getElementById('modal-backdrop').classList.add('open');
+  document.getElementById('modal-backdrop').setAttribute('aria-hidden','false');
+  document.getElementById('modal-body').innerHTML=`
+    <div style="display:grid;gap:.55rem">
+      <p style="font-size:1rem;line-height:1.5">Você está vendo um pequeno mundo vivo.</p>
+      <p class="mini">As bolinhas verdes são agentes. Cada um tem genes, energia, idade e comportamento próprio. Eles procuram comida, evitam veneno, seguem rastros e tentam sobreviver tempo suficiente para se reproduzir.</p>
+      <p class="mini">Você não controla nenhum agente. O jogo é sobre observar um sistema, entender seus gargalos e mexer nas condições que fazem esse sistema evoluir.</p>
+      <div style="background:rgba(5,14,11,.7);border:1px solid var(--line);border-radius:7px;padding:.65rem .8rem;display:grid;gap:.35rem">
+        <p class="mini"><strong style="color:var(--mint)">Upgrades da run</strong> — biomassa e insight compram melhorias temporárias.</p>
+        <p class="mini"><strong style="color:var(--mint)">Eventos e quiz</strong> — o jogo testa se você entendeu o motor. Acertar dá vantagem.</p>
+        <p class="mini"><strong style="color:var(--violet)">Ascensão</strong> — quando a run estagnar, ascenda. O mundo recomeça. Você não.</p>
+      </div>
+      <p class="mini" style="color:var(--faint)">Em alguns minutos o primeiro desafio vai aparecer. Até lá, observe o que está acontecendo.</p>
+      <p style="text-align:center;color:var(--mint);font-style:italic;font-size:.9rem;margin-top:.2rem">Entenda o sistema melhor do que o sistema te entende.</p>
+    </div>
+    <button class="modal-continue" onclick="closeModal()">Começar observando</button>`;
+}
+
+/* ═══ HERANÇAS DE ASCENSÃO ═══ */
+const ASCENSION_HERITAGES={
+  knowledge:{
+    name:'Preservar conhecimento',
+    desc:'Nova run começa com +18 insight. Quizzes corretos rendem +25% de Memória Evolutiva.',
+    effect:{insightStart:18,quizMemoryMul:1.25}
+  },
+  resilience:{
+    name:'Preservar resiliência',
+    desc:'Entropia cresce 12% mais devagar. Recuperação de quase-extinção rende +25% de Memória.',
+    effect:{entropyMul:0.88,nearExtinctionMul:1.25}
+  },
+  fertility:{
+    name:'Preservar reprodução',
+    desc:'Limiar de reprodução reduzido em 8%. Pressão ambiental sobe levemente (+6%).',
+    effect:{reproCostMul:0.92,pressureMul:1.06}
+  },
+  observation:{
+    name:'Preservar observação',
+    desc:'Eventos resolvidos rendem +20% de Memória. Eventos difíceis aparecem 15% mais.',
+    effect:{eventRewardMul:1.2,hardEventChance:1.15}
+  }
+};
+
+function getActiveHeritage(){return ASCENSION_HERITAGES[prestige.activeHeritage]||null;}
+
+/* ═══ DIFICULDADE PROGRESSIVA ═══ */
+function prestigeDiff(){
+  const p=prestige.runCount||0;
+  const h=getActiveHeritage();
+  return {
+    difficulty:    1 + p*0.12,
+    eventPressure: 1 + p*0.08,
+    quizDifMax:    p<2?1:p<5?2:3,
+    entropyMult:   (1 + p*0.04)*(h?.effect.entropyMul||1),
+    foodSpawnMul:  Math.max(0.72, 1 - p*0.015),
+    reproCostMul:  h?.effect.reproCostMul||1,
+    pressureMul:   h?.effect.pressureMul||1,
+    eventRewardMul:h?.effect.eventRewardMul||1,
+    hardEventChance:h?.effect.hardEventChance||1,
+  };
+}
+
+/* ═══ PRESTÍGIO ═══ */
+function calcMemoria(){
+  const s=runStats;
+  const cycleRun=Math.max(0,cycle-s.startCycle);
+  const h=getActiveHeritage();
+  const qMul=h?.effect.quizMemoryMul||1;
+  const neMul=h?.effect.nearExtinctionMul||1;
+  const evMul=h?.effect.eventRewardMul||1;
+
+  let base=
+    Math.sqrt(cycleRun/1000)
+    +Math.sqrt(Math.max(0,births)/250)
+    +Math.sqrt(Math.max(0,deaths)/250)
+    +(s.maxDiversity/100)
+    +(s.eventsResolved*0.5*evMul)
+    +(s.quizCorrect*0.5*qMul)
+    +(Object.values(upgrades).reduce((a,b)=>a+b,0)*0.3);
+
+  base=Math.max(2,Math.min(40,base));
+
+  let mul=1;
+  if(s.maxPop>=300)            mul*=1.3;
+  if(s.nearExtinct)            mul*=1.4*neMul;
+  if(s.entropyHighCycles>=500) mul*=1.2;
+  if(s.labMode)                mul=0;
+  if(s.catastropheCount>0)     mul*=0.85;
+  if(s.seedAgentCount>2)       mul*=0.90;
+  if(cycleRun<2000)            mul*=0.80;
+
+  return Math.max(0,Math.floor(base*mul));
+}
+
+function calcMemoriaBreakdown(){
+  const s=runStats;
+  const cycleRun=Math.max(0,cycle-s.startCycle);
+  const h=getActiveHeritage();
+  const qMul=h?.effect.quizMemoryMul||1;
+  const evMul=h?.effect.eventRewardMul||1;
+  return {
+    ciclo:      +Math.sqrt(cycleRun/1000).toFixed(2),
+    nascimentos:+Math.sqrt(Math.max(0,births)/250).toFixed(2),
+    mortes:     +Math.sqrt(Math.max(0,deaths)/250).toFixed(2),
+    diversidade:+(s.maxDiversity/100).toFixed(2),
+    eventos:    +(s.eventsResolved*0.5*evMul).toFixed(2),
+    quizzes:    +(s.quizCorrect*0.5*qMul).toFixed(2),
+    upgrades:   +(Object.values(upgrades).reduce((a,b)=>a+b,0)*0.3).toFixed(2),
+  };
+}
+
+function ascend(){
+  const mem=calcMemoria();
+  const bd=calcMemoriaBreakdown();
+  _pendingHeritage=null;
+  _ascensionQuizResult=null;
+  _lockedMem=0;
+  // Abrir modal base antes do quiz
+  pauseGame();
+  modalOpen=true;
+  document.getElementById('modal-backdrop').classList.add('open');
+  document.getElementById('modal-backdrop').setAttribute('aria-hidden','false');
+  if(runStats.labMode){
+    // Lab: sem quiz, vai direto para breakdown com 0 ME
+    openAscendConfirm(0,bd);
+  } else {
+    // Quiz obrigatório antes do breakdown
+    openAscensionQuiz(mem,bd);
+  }
+}
+
+function executeAscend(chosenHeritage){
+  if(!chosenHeritage||!ASCENSION_HERITAGES[chosenHeritage]){
+    showToast('Escolha uma herança','Selecione uma das 4 heranças antes de ascender.');
+    return;
+  }
+  const mem=_lockedMem>0?_lockedMem:calcMemoria();
+  prestige.memoria+=mem;
+  prestige.runCount++;
+  prestige.activeHeritage=chosenHeritage;
+  if(mem>prestige.bestMemoria)prestige.bestMemoria=mem;
+  const hName=ASCENSION_HERITAGES[chosenHeritage].name;
+  logEntry('Ascensão P'+prestige.runCount,'+'+mem+' ME | Herança: '+hName,'type-epic');
+  // Reset upgrades de biomassa; insight-upgrades persistem
+  upgradeDefs.forEach(d=>{ if(d.resetsOnAscend)upgrades[d.id]=0; });
+  saveState();
+  closeModal();
+  startNewRun(pendingBiome);
+}
+
+function startNewRun(mode){
+  // Aplicar bônus permanentes
+  const hb=prestige.perms.heritageBonus||0;
+  const cm=prestige.perms.collectiveMemory||0;
+  runStats={maxPop:0,maxDiversity:0,nearExtinct:false,entropyHighCycles:0,
+            quizCorrect:0,quizWrong:0,quizTotal:0,catastropheCount:0,seedAgentCount:0,
+            startCycle:0,eventsResolved:0,labMode:false};
+  reset(mode);
+  // Herança basal permanente
+  if(hb>0){ idle.biomass+=120*hb; idle.insight+=8*hb; }
+  // Herança estratégica de ascensão
+  const h=getActiveHeritage();
+  if(h?.effect.insightStart) idle.insight+=h.effect.insightStart;
+  // Instinto coletivo — memória aumentada no makeAgent via flag
+  runStats.startCycle=cycle;
+  updateLabBadge();
+}
+
+function permUpgradeCost(def){
+  const lv=prestige.perms[def.id]||0;
+  return lv<def.max?def.cost[lv]:Infinity;
+}
+function canBuyPerm(def){
+  const lv=prestige.perms[def.id]||0;
+  return lv<def.max&&prestige.memoria>=permUpgradeCost(def);
+}
+function buyPermUpgrade(id){
+  const def=permUpgradeDefs.find(d=>d.id===id);
+  if(!def||!canBuyPerm(def))return;
+  const cost=permUpgradeCost(def);
+  prestige.memoria-=cost;
+  prestige.perms[id]=(prestige.perms[id]||0)+1;
+  logEntry('Upgrade permanente: '+def.name,'Nível '+(prestige.perms[id])+' — custo '+cost+' ME.','type-epic');
+  saveState();renderPermUpgrades();updatePrestigeUI();
+}
+
+/* ═══ TRACKING DE RUN ═══ */
+function trackRunStats(){
+  const pop=agents.length,div=diversity();
+  if(pop>runStats.maxPop)runStats.maxPop=pop;
+  if(div>runStats.maxDiversity)runStats.maxDiversity=div;
+  if(pop>0&&pop<8)runStats.nearExtinct=true;
+  if(idle.entropy>70)runStats.entropyHighCycles++;
+}
+
+
+function activateLabMode(){
+  if(!runStats.labMode){
+    runStats.labMode=true;
+    updateLabBadge();
+    showToast('[LAB] Modo laboratório','Esta run não gerará Memória Evolutiva. Continue explorando o motor.');
+  }
+}
+function updateLabBadge(){
+  const badge=document.getElementById('lab-badge');
+  const ascBtn=document.getElementById('btn-ascend');
+  if(!badge||!ascBtn)return;
+  if(runStats.labMode){
+    badge.style.display='inline-block';
+    ascBtn.disabled=false; // lab não bloqueia saída — bloqueia só a ME
+    ascBtn.title='Modo laboratório ativo — ascensão permitida, mas esta run não gerará Memória Evolutiva.';
+  } else {
+    badge.style.display='none';
+    ascBtn.disabled=false;
+    ascBtn.title='Apaga o mundo atual. Preserva compreensão em forma de Memória Evolutiva.';
+  }
+}
+
+/* ═══ MODAL DE ASCENSÃO ═══ */
+
+/* ═══ QUIZ DE ASCENSÃO ═══ */
+
+// Gera a questão mais relevante para o estado atual da run
+function buildAscensionQuiz(){
+  const e=idle.entropy, pop=agents.length;
+  const div=diversity(), cap=carryingCapacity();
+  const crowd=pop/Math.max(1,cap);
+
+  // Seleciona cenário pelo estado dominante
+  if(e>=90){
+    return{
+      stem:'Sua entropia ficou alta por muito tempo, mas a população se manteve. Qual mecanismo provavelmente sustentou o sistema?',
+      opts:['Upgrades de Biorreatores compensaram a queda de comida','Agentes com genes de alta memória evitaram zonas hostis','O estabilizador entrópico reduziu o custo ativo','Predadores reduziram a densidade antes do colapso'],
+      cor:0,
+      exp:'Biorreatores aumentam spawn de comida e energia por alimento. Em entropia alta, o foodMul cai para 0.22–0.70, mas upgrades de alto nível podem parcialmente compensar isso, sustentando a população mesmo sem crescimento.',
+    };
+  }
+  if(crowd>0.85){
+    return{
+      stem:'Sua população ficou próxima ao teto de capacidade por longos ciclos. Por que a reprodução não travou completamente?',
+      opts:['A logistic wall cresce linear com o crowd, não exponencial','Agentes com metabolismo baixo têm threshold menor e continuam reproduzindo','O reciclador converte mortes em biomassa, reduzindo o custo médio','O insight suplementar dos eventos reduz o custo energético de reprodução'],
+      cor:1,
+      exp:'O threshold de reprodução inclui a logistic wall: (crowd − 0.62) × 210. Agentes com gene metabolism baixo têm menor REPRO_BASE ajustado — eles reproduzem mais facilmente mesmo com crowd alto, mantendo a população viva perto do teto.',
+    };
+  }
+  if(div<60&&pop>100){
+    return{
+      stem:'Sua diversidade genética caiu enquanto a população ficou alta. Qual é a consequência mais provável?',
+      opts:['O insight passivo cai porque diversity() alimenta o cálculo de insight','A entropia sobe mais rápido porque agentes similares competem pelo mesmo recurso','A reprodução fica mais barata porque o threshold usa genes médios','Os predadores perdem eficiência porque todos os agentes têm a mesma velocidade'],
+      cor:0,
+      exp:'diversity() entra diretamente no cálculo de insight passivo: diversity()/260 × INSIGHT_DIV_FACTOR. Diversidade baixa reduz esse componente, o que diminui o ganho de insight por ciclo e desacelera a compra de upgrades avançados.',
+    };
+  }
+  // Fallback: pergunta sobre a run em geral
+  return{
+    stem:'Você completou uma run. O que determina a quantidade de Memória Evolutiva que você vai receber?',
+    opts:['O tempo total de jogo em horas reais','Ciclos rodados, nascimentos, mortes, diversidade, eventos e quizzes corretos','O número de upgrades no nível máximo','A população final no momento da ascensão'],
+    cor:1,
+    exp:'A Memória Evolutiva é calculada com sqrt(ciclo/1000) + sqrt(nascimentos/250) + sqrt(mortes/250) + diversidadeMax/100 + eventos×0.5 + quizzes×0.5 + upgrades×0.3, com multiplicadores por conquistas e penalidades por intervenções.',
+  };
+}
+
+let _ascensionQuizResult=null; // 'correct' | 'wrong' | null
+let _lockedMem=0; // ME final travada no quiz, usada no executeAscend
+
+function openAscensionQuiz(memBase, bd){
+  const q=buildAscensionQuiz();
+  // Embaralhar respostas
+  const idxs=[0,1,2,3].sort(()=>Math.random()-.5);
+  const shuffled=idxs.map(i=>q.opts[i]);
+  const correctIdx=idxs.indexOf(q.cor);
+  _ascensionQuizResult=null;
+
+  document.getElementById('modal-title').textContent='Quiz de Ascensão';
+  const tl=document.getElementById('modal-type-label');tl.textContent='Diagnóstico';tl.className='modal-type-label quiz';
+  document.getElementById('modal-box').className='modal quiz-modal';
+
+  document.getElementById('modal-body').innerHTML=`
+    <div style="background:rgba(94,232,150,.07);border:1px solid rgba(94,232,150,.2);border-radius:7px;padding:.6rem .8rem">
+      <p style="color:var(--mint);font-weight:700;font-size:.88rem;margin-bottom:.25rem">Antes de ascender — defenda sua run</p>
+      <p class="mini" style="color:var(--muted)">Esta pergunta é sobre o que aconteceu no seu mundo. Acertar rende +20% de Memória. Errar reduz para 65%.</p>
+    </div>
+    <p class="modal-question">${q.stem}</p>
+    <div class="modal-choices" id="asc-choices">
+      ${shuffled.map((t,i)=>`<button class="modal-choice" onclick="answerAscensionQuiz(${i},${correctIdx},${memBase},JSON.parse(this.dataset.bd),${JSON.stringify(q.exp).replace(/"/g,'&quot;')})" data-bd="${JSON.stringify(bd).replace(/"/g,'&quot;')}">${t}</button>`).join('')}
+    </div>`;
+}
+
+function answerAscensionQuiz(idx, correctIdx, memBase, bd, exp){
+  const correct=idx===correctIdx;
+  _ascensionQuizResult=correct?'correct':'wrong';
+  const memMul=correct?1.20:0.65;
+  const memFinal=Math.max(0,Math.floor(memBase*memMul));
+  _lockedMem=memFinal; // travar ME agora — runStats ainda intacto
+
+  document.querySelectorAll('#asc-choices .modal-choice').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===correctIdx)b.classList.add('correct');
+    else if(i===idx&&!correct)b.classList.add('wrong');
+  });
+
+  const explainHtml=correct?'':`
+    <div style="background:rgba(255,100,100,.07);border:1px solid rgba(255,100,100,.2);border-radius:7px;padding:.6rem .8rem">
+      <p class="mini" style="color:var(--amber);font-weight:700">Explicação obrigatória</p>
+      <p class="mini">${exp}</p>
+    </div>`;
+
+  const resultHtml=`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem .8rem;background:rgba(176,140,255,.08);border:1px solid rgba(176,140,255,.25);border-radius:7px">
+      <div>
+        <span style="font-weight:700">${correct?'✓ Correto':'✗ Errado'}</span>
+        <span class="mini" style="display:block;color:var(--muted)">${correct?'Memória +20%':'Memória ×0.65'}</span>
+      </div>
+      <span style="font-size:1.3rem;font-weight:900;color:var(--violet)">${memFinal} ME</span>
+    </div>
+    ${explainHtml}
+    <button class="modal-continue" onclick="openAscendConfirm(${memFinal},JSON.parse(this.dataset.bd))" data-bd="${JSON.stringify(bd).replace(/"/g,'&quot;')}">Continuar → escolher herança</button>`;
+
+  const body=document.getElementById('modal-body');
+  body.insertAdjacentHTML('beforeend',resultHtml);
+}
+
+function openAscendConfirm(mem,bd){
+  pauseGame();
+  modalOpen=true;
+  document.getElementById('modal-title').textContent='Ascensão — Prestígio '+(prestige.runCount+1);
+  const tl=document.getElementById('modal-type-label');tl.textContent='Prestígio';tl.className='modal-type-label epic';
+  document.getElementById('modal-box').className='modal epic-modal';
+  document.getElementById('modal-backdrop').classList.add('open');
+  document.getElementById('modal-backdrop').setAttribute('aria-hidden','false');
+  renderAscendStep1(mem,bd);
+}
+
+function renderAscendStep1(mem,bd){
+  const cycleRun=Math.max(0,cycle-runStats.startCycle);
+  const rows=Object.entries({
+    'Ciclo da run':bd.ciclo,'Nascimentos':bd.nascimentos,'Mortes':bd.mortes,
+    'Diversidade máx':bd.diversidade,'Eventos resolvidos':bd.eventos,
+    'Quizzes corretos':bd.quizzes,'Upgrades':bd.upgrades
+  }).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:.26rem 0;border-bottom:1px solid var(--line);font-size:.82rem"><span style="color:var(--muted)">${k}</span><span style="color:var(--mint);font-variant-numeric:tabular-nums">+${v}</span></div>`).join('');
+
+  const modifiers=[];
+  if(runStats.labMode)   modifiers.push({c:'var(--red)',   t:'⚠ Modo laboratório — prestígio cancelado (×0)'});
+  if(runStats.catastropheCount>0) modifiers.push({c:'var(--amber)',t:'× Catástrofe manual (×0.85)'});
+  if(runStats.seedAgentCount>2)   modifiers.push({c:'var(--amber)',t:'× Agentes criados manualmente (×0.90)'});
+  if(cycleRun<2000)               modifiers.push({c:'var(--amber)',t:'× Run curta, menos de 2000 ciclos (×0.80)'});
+  if(runStats.nearExtinct)        modifiers.push({c:'var(--green)',t:'✓ Recuperação de quase-extinção (×1.40)'});
+  if(runStats.maxPop>=300)        modifiers.push({c:'var(--green)',t:'✓ População passou de 300 (×1.30)'});
+  if(runStats.entropyHighCycles>=500)modifiers.push({c:'var(--green)',t:'✓ Sobreviveu entropia alta (×1.20)'});
+
+  document.getElementById('modal-body').innerHTML=`
+    <div style="background:rgba(5,14,11,.7);border:1px solid var(--line);border-radius:7px;padding:.65rem .8rem">${rows}</div>
+    ${modifiers.length?`<div style="display:grid;gap:.22rem">${modifiers.map(m=>`<span class="mini" style="color:${m.c}">${m.t}</span>`).join('')}</div>`:''}
+    <div style="background:rgba(176,140,255,.08);border:1px solid rgba(176,140,255,.25);border-radius:7px;padding:.65rem .8rem;display:grid;gap:.28rem">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:700">Memória base</span>
+        <span style="font-size:1.3rem;font-weight:900;color:var(--violet)">${mem} ME</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted)">
+        <span>Quiz de ascensão</span><span>×0.65 a ×1.20 — próxima etapa</span>
+      </div>
+    </div>
+    ${mem===0?'<p class="mini" style="color:var(--red)">Modo laboratório ativo — nenhuma ME será gerada. A ascensão ainda reseta a run.</p>':''}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.45rem">
+      <button onclick="closeModal();resumeGame()" style="border-color:var(--line)">← Continuar run</button>
+      <button class="modal-continue" onclick="renderAscendStep2(${mem},${JSON.stringify(bd).replace(/"/g,'&quot;')})">Escolher herança →</button>
+    </div>`;
+}
+
+function renderAscendStep2(mem,bd){
+  const heritages=Object.entries(ASCENSION_HERITAGES);
+  document.getElementById('modal-body').innerHTML=`
+    <p style="font-weight:700;font-size:.95rem">Escolha a herança desta ascensão</p>
+    <p class="mini" style="color:var(--muted)">A herança vale para a próxima run inteira. Escolha com base na estratégia que você quer perseguir.</p>
+    <div style="display:grid;gap:.5rem" id="heritage-choices">
+      ${heritages.map(([key,h])=>`
+        <button class="upgrade" style="min-height:72px;text-align:left;border-color:var(--line)" data-heritage="${key}" onclick="selectHeritage(this,'${key}')">
+          <span><strong>${h.name}</strong><span>${h.desc}</span></span>
+          <b class="level-pill" style="color:var(--violet);border-color:rgba(176,140,255,.3);font-size:.7rem">→</b>
+        </button>`).join('')}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.45rem">
+      <button onclick="renderAscendStep1(${mem},JSON.parse(this.dataset.bd))" data-bd="${JSON.stringify(bd).replace(/"/g,'&quot;')}" style="border-color:var(--line)">← Voltar</button>
+      <button class="modal-continue" id="confirm-ascend" disabled onclick="confirmHeritage(${mem})">Ascender →</button>
+    </div>`;
+}
+
+let _pendingHeritage=null;
+function selectHeritage(btn,key){
+  _pendingHeritage=key;
+  document.querySelectorAll('[data-heritage]').forEach(b=>{
+    b.style.borderColor=b.dataset.heritage===key?'var(--violet)':'var(--line)';
+    b.style.background=b.dataset.heritage===key?'rgba(176,140,255,.1)':'';
+  });
+  const confirmBtn=document.getElementById('confirm-ascend');
+  if(confirmBtn){confirmBtn.disabled=false;confirmBtn.textContent='Ascender com "'+ASCENSION_HERITAGES[key].name+'" →';}
+}
+
+function confirmHeritage(mem){
+  if(!_pendingHeritage){showToast('Escolha uma herança','Selecione antes de confirmar.');return;}
+  // Escolha de bioma inline antes de confirmar
+  const biomes=[['balanced','Equilíbrio'],['scarcity','Escassez'],['toxicity','Campo tóxico'],['bloom','Explosão']];
+  const locked=(prestige.perms.seedBank||0)>=1
+    ?[['arctic','Ciclo Ártico 🧊'],['parasitism','Parasitismo ☣']]
+    :[['arctic','Ciclo Ártico 🔒'],['parasitism','Parasitismo 🔒']];
+  document.getElementById('modal-body').innerHTML=`
+    <p style="font-weight:700">Herança: <span style="color:var(--violet)">${ASCENSION_HERITAGES[_pendingHeritage].name}</span></p>
+    <p class="mini" style="color:var(--muted)">Escolha o bioma da próxima run:</p>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.42rem" id="biome-choices">
+      ${[...biomes,...locked].map(([m,label])=>`<button class="mode" data-biome="${m}" onclick="selectBiome(this,'${m}')" style="${m===pendingBiome?'border-color:var(--cyan);background:rgba(93,207,255,.08)':''}">${label}</button>`).join('')}
+    </div>
+    <div style="display:flex;gap:.5rem;margin-top:.3rem">
+      <div style="flex:1;padding:.65rem .8rem;background:rgba(176,140,255,.08);border:1px solid rgba(176,140,255,.25);border-radius:7px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:.9rem;font-weight:700">+${mem} ME</span>
+        <span class="mini" style="color:var(--muted)">Prestígio ${prestige.runCount+1} · Dificuldade ×${(1+(prestige.runCount+1)*0.12).toFixed(2)}</span>
+      </div>
+    </div>
+    <button class="modal-continue" onclick="executeAscend('${_pendingHeritage}')">Confirmar ascensão</button>`;
+}
+
+function selectBiome(btn,mode){
+  if((mode==='arctic'||mode==='parasitism')&&(prestige.perms.seedBank||0)<1){
+    showToast('Bioma bloqueado','Desbloqueie "Banco de Sementes" com Memória Evolutiva para acessar este bioma.');
+    return;
+  }
+  pendingBiome=mode;
+  document.querySelectorAll('[data-biome]').forEach(b=>{
+    b.style.borderColor=b.dataset.biome===mode?'var(--cyan)':'var(--line)';
+    b.style.background=b.dataset.biome===mode?'rgba(93,207,255,.08)':'';
+  });
+}
+
+
+function biomeLabel(m){
+  return{balanced:'Equilíbrio',scarcity:'Escassez',toxicity:'Campo tóxico',bloom:'Explosão',arctic:'Ciclo Ártico',parasitism:'Parasitismo'}[m]||m;
+}
+
+/* ═══ UI PRESTÍGIO ═══ */
+function renderPermUpgrades(){
+  const el=document.getElementById('perm-upgrades-list');
+  if(!el)return;
+  el.innerHTML=permUpgradeDefs.map(def=>{
+    const lv=prestige.perms[def.id]||0,max=lv>=def.max,cost=permUpgradeCost(def),ok=!max&&canBuyPerm(def);
+    const price=max?'máximo':cost+' ME';
+    const stars='★'.repeat(lv)+'☆'.repeat(def.max-lv);
+    return `<button class="upgrade" data-pid="${def.id}" type="button" ${ok?'':'disabled'}>
+      <span><strong>${def.name}</strong><span>${def.desc}</span><em style="color:var(--violet)">${price} ${stars}</em></span>
+      <b class="level-pill" style="color:var(--violet);border-color:rgba(176,140,255,.3)">${lv}</b></button>`;
+  }).join('');
+  el.querySelectorAll('[data-pid]').forEach(b=>b.addEventListener('click',()=>buyPermUpgrade(b.dataset.pid)));
+}
+
+function updatePrestigeUI(){
+  const lvl=document.getElementById('prestige-level');
+  if(lvl)lvl.textContent=prestige.runCount>0?'P'+prestige.runCount:'' ;
+  const diff=prestigeDiff();
+  const diffEl=document.getElementById('prestige-diff');
+  if(diffEl)diffEl.textContent='×'+diff.difficulty.toFixed(2);
+  const el=document.getElementById('prestige-memoria');
+  if(el)el.textContent=fmt(prestige.memoria)+' ME';
+  const rc=document.getElementById('prestige-runs');
+  if(rc)rc.textContent=prestige.runCount;
+  const best=document.getElementById('prestige-best');
+  if(best)best.textContent=fmt(prestige.bestMemoria)+' ME';
+  renderPermUpgrades();
+}
+
+function reset(mode='balanced', opts){
+  cycle=0;nextId=1;births=0;deaths=0;selectedId=null;
+  agents=[];foods=[];poisons=[];predators=[];
+  trails=new Float32Array(CFG.W*CFG.H);history=[];effects=[];
+  world.pace=CFG.PACE_BASE;world.mutationRate=CFG.MUTATION_BASE;world.pressure=CFG.PRESSURE_BASE;
+  if(!opts||!opts.preserveTimer)scheduleNextEvent(false);clearInterval(quizTimerInterval);
+  if(modalOpen)closeModal();
+  document.getElementById('log').innerHTML='';
+  const cfg={
+    balanced:   [70, 180, 42,  0],
+    scarcity:   [92, 105, 28,  0],
+    toxicity:   [78, 150,135,  0],
+    bloom:      [42, 320, 18,  0],
+    arctic:     [55, 120, 20,  0], // entropia baixa mas food escassa — desbloqueado com seedBank>=1
+    parasitism: [65, 160, 55,  4], // predadores desde o início — desbloqueado com seedBank>=1
+  };
+  const c=cfg[mode]||cfg.balanced;
+  // Predadores iniciais para biomas que os têm desde o começo
+  if(c[3]>0){
+    predEnabled=true;
+    document.getElementById('btn-predators').textContent='Predadores: on';
+    for(let i=0;i<c[3];i++)predators.push({x:rand(5,CFG.W-5),y:rand(5,CFG.H-5),vx:0,vy:0,energy:120,id:nextId++});
+  }
+  for(let i=0;i<c[0];i++){const a=makeAgent();a.lineageId=a.id;agents.push(a);}
+  scatter(foods,c[1]);scatter(poisons,c[2]);
+  if(predEnabled)for(let i=0;i<5;i++)predators.push(makePredator());
+  idle={biomass:120,insight:0,entropy:0};
+  running=true;document.getElementById('btn-pause').textContent='Pausar';
+  logEntry('Mundo reiniciado','Preset: '+mode+'. Observe se a população estabiliza, explode ou colapsa.','type-world');
+  renderUpgrades();updateUI();
+}
+
+function resizeCanvas(){const r=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;canvas.width=Math.max(640,Math.floor(r.width*dpr));canvas.height=Math.max(420,Math.floor(r.height*dpr));}
+window.addEventListener('resize',resizeCanvas);
+
+canvas.addEventListener('click',ev=>{
+  const r=canvas.getBoundingClientRect(),x=(ev.clientX-r.left)/r.width*CFG.W,y=(ev.clientY-r.top)/r.height*CFG.H;
+  const clicked=nearest(agents,x,y,5.3);
+  if(clicked&&!ev.shiftKey){selectedId=clicked.id;updateUI();return;}
+  const target=ev.shiftKey?poisons:foods;
+  for(let i=0;i<16;i++)target.push({x:wrap(x+rand(-3,3),CFG.W),y:wrap(y+rand(-3,3),CFG.H),life:rand(300,900)});
+  logEntry(ev.shiftKey?'Veneno inserido':'Comida inserida','Terreno seletivo alterado.','type-world');
+});
+
+document.getElementById('btn-pause').addEventListener('click',()=>{running=!running;document.getElementById('btn-pause').textContent=running?'Pausar':'Rodar';updateUI();});
+document.getElementById('btn-step').addEventListener('click',()=>{if(!running){simStep();drawWorld();updateUI();}});
+document.getElementById('btn-reset').addEventListener('click',()=>reset('balanced'));
+document.getElementById('btn-catastrophe').addEventListener('click',()=>{ activateLabMode();runStats.catastropheCount++;
+  agents=agents.filter(()=>Math.random()>.42);foods=foods.filter(()=>Math.random()>.64);scatter(poisons,70);
+  logEntry('Catástrofe','Parte da população morreu, comida sumiu, veneno aumentou.','type-warn');updateUI();
+});
+document.getElementById('btn-food').addEventListener('click',()=>{ activateLabMode();scatter(foods,110);logEntry('Chuva de comida','Recursos abundantes — seleção por eficiência relaxa.','type-world');});
+document.getElementById('btn-agents').addEventListener('click',()=>{ activateLabMode();runStats.seedAgentCount++; for(let i=0;i<28;i++){const a=makeAgent();a.lineageId=a.id;agents.push(a);}logEntry('Novos agentes','28 agentes com genes aleatórios injetados.','type-world');});
+document.getElementById('btn-predators').addEventListener('click',()=>{ activateLabMode();
+  predEnabled=!predEnabled;
+  if(predEnabled&&!predators.length)for(let i=0;i<5;i++)predators.push(makePredator());
+  if(!predEnabled)predators=[];
+  document.getElementById('btn-predators').textContent='Predadores: '+(predEnabled?'on':'off');
+  logEntry('Predadores '+(predEnabled?'ativados':'removidos'),predEnabled?'Pressão seletiva por fuga e cautela.':'Mundo depende mais de metabolismo.','type-world');
+});
+document.getElementById('btn-rand-event').addEventListener('click',()=>{activateLabMode();triggerEvent(false);});
+document.getElementById('btn-force-quiz').addEventListener('click',()=>{activateLabMode();triggerEvent(true);});
+document.querySelectorAll('.mode').forEach(b=>b.addEventListener('click',()=>reset(b.dataset.mode)));
+document.getElementById('btn-ascend')?.addEventListener('click',()=>ascend());
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modalOpen&&quizState.phase!=='answer')closeModal();});
+
+function loop(ts){
+  if(lastFrameTs){
+    const delta=ts-lastFrameTs;
+    if(running&&!modalOpen){
+      elapsedMs+=delta;cycleAcc+=effectivePace();
+      const steps=Math.min(10,Math.floor(cycleAcc));cycleAcc-=steps;
+      for(let i=0;i<steps;i++)simStep();
+      maybeTimedEvent();
+      if(Math.floor(elapsedMs/10000)!==Math.floor((elapsedMs-delta)/10000))saveState();
+    }
+  }
+  lastFrameTs=ts;drawWorld();
+  if(cycle%8===0)updateUI();
+  requestAnimationFrame(loop);
+}
+
+resizeCanvas();reset('balanced');loadState();renderPermUpgrades();updatePrestigeUI();requestAnimationFrame(loop);
+// Splash na primeira abertura (após loadState para saber se já viu)
+if(!onboarding.shown)openSplash();
+</script>
+</body>
+</html>
