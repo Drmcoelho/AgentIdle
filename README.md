@@ -2,7 +2,7 @@
 
 > Idle game de **computação viva**: agentes evoluem por seleção emergente, o ambiente muda sozinho e eventos de raciocínio (quizzes de computação) desafiam o jogador.
 
-**Versão atual:** `v4.6` · arquivo único, sem build, sem dependências.
+**Versão atual:** `v4.7` · arquivo único, sem build, sem dependências.
 
 [▶ Jogar](index.html) — basta abrir o `index.html` em qualquer navegador moderno.
 
@@ -47,7 +47,7 @@ O progresso de prestígio é salvo no `localStorage` do navegador.
 
 ```
 .
-├── index.html      # o jogo (versão jogável atual, v4.6)
+├── index.html      # o jogo (versão jogável atual, v4.7)
 ├── README.md       # este arquivo
 ├── ROADMAP.md      # plano de versões futuras
 └── CHANGELOG.md    # histórico de versões

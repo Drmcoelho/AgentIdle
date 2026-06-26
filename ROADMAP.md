@@ -9,18 +9,17 @@ ser renegociado. Itens marcados com 🔧 são dívida técnica, 🎮 são jogabi
 
 ---
 
-## v4.7 — Higiene e fundação (patch)
+## v4.7 — Higiene e fundação (patch) ✅ concluída
 
 Pequeno, sem features novas. Prepara o terreno para tudo que vem depois.
 
-- 🔧 **Fonte única de versão.** Um único `const VERSION = 'v4.7'` alimentando
-  `<title>`, header e qualquer log. Corrige a inconsistência v3/v4/v4.6.
-- 🔧 **Spatial grid** para `nearest`/`nearestExcept`. Hoje a busca de vizinhos é
-  O(n²) por ciclo; com `MAX_AGENTS=640` isso limita o ritmo. Bucketização da grade
-  100×72 deixa a simulação fluida em populações altas.
-- 🔧 **Versão dos saves.** Carimbar `schemaVersion` no `localStorage` e migrar com
-  segurança, evitando saves corrompidos entre versões.
-- 🔧 Botão/tecla de **reset de save** seguro (com confirmação) para depuração.
+- [x] 🔧 **Fonte única de versão.** Um único `const VERSION = 'v4.7'` alimentando
+  `<title>` e header. Corrige a inconsistência v3/v4/v4.6.
+- [x] 🔧 **Spatial grid** para a busca de vizinhos entre agentes (era O(n²) por
+  ciclo). Bucketização da grade 100×72; equivalência validada vs. busca exaustiva.
+  Comida/veneno seguem lineares por design (raio longo + consumação intra-ciclo).
+- [x] 🔧 **Versão dos saves.** `schemaVersion` no `localStorage` com migração segura.
+- [x] 🔧 Botão de **reset de save** seguro (com confirmação) para depuração.
 
 ## v5.0 — Conteúdo e progressão (minor)
 
