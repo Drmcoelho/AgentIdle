@@ -70,11 +70,10 @@ Só vale se o arquivo único começar a doer. Mantém o jogo 100% client-side.
 
 ## Backlog / ideias soltas (sem versão)
 
-- 🎮 **Cadência de eventos.** Hoje eventos normais ocorrem a cada 30 min–2 h. Para o
-  quiz ser de fato o motor *primário* de insight (e não só uma fonte relevante),
-  avaliar encurtar a cadência (ex.: 4–8 min) — equilibrando contra o incômodo de
-  modais frequentes. A v5.0 já reduziu o passivo e escalou a recompensa do quiz; este
-  é o passo complementar.
+- [x] 🎮 ~~**Cadência de eventos.**~~ Feito na v5.0: cadência reduzida para ~4–7 min,
+  passivo virou trickle e o Laboratório passou a amplificar o quiz — o quiz agora é
+  56–66% da renda de insight. (Acompanhar feedback: se modais frequentes incomodarem,
+  considerar um modo "eventos só quando pausado" ou notificação não-bloqueante.)
 
 - ✨ Exportar/importar save (string ou arquivo) para troca entre dispositivos.
 - 🎮 Modo "observatório" sem upgrades, só para assistir a evolução.

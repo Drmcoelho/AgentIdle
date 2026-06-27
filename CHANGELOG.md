@@ -18,25 +18,29 @@ Versão de conteúdo: foco no motor de questões (o principal eixo de progressã
   Cumpre a promessa do manual ("o sistema não rastreia... ainda").
 - Novas categorias adicionadas ao `catMap` da UID do quiz.
 
-### Balanceamento — economia de insight
-- **Insight passivo reduzido 4–7×** (`INSIGHT_PER_BIRTH` 0.018→0.005, `INSIGHT_DIV_FACTOR`
-  0.005→0.002, `INSIGHT_POP_FACTOR` 0.00006→0.000004). Antes, o passivo gerava ~15
-  insight/s no meio de jogo — tornando o recurso trivial, ao contrário do que a UI
-  dizia. Agora é um filete (~2,6/s no mesmo estado).
-- **Composto do Laboratório reduzido** (`UP_LAB_INSIGHT` 0.22→0.10) para conter o laço
-  de fuga (insight → mais lab → mais insight).
-- **Recompensa do quiz agora escala com a dificuldade**: +25 / +55 / +95 (×directedMutation),
-  no lugar de +35 fixo. Um quiz difícil passa a valer dezenas de segundos de passivo —
-  o quiz vira fonte real de insight, como o manual sempre prometeu.
-- Texto do rodapé corrigido (dizia "passivo é escasso; quiz vale +35", o que era falso).
-- Nota: a cadência de eventos (30 min–2 h) ainda limita o quiz como motor *primário*;
-  encurtá-la fica como item separado (ver ROADMAP).
+### Balanceamento — insight vira recurso escasso e o quiz vira o motor principal
+Antes, o insight passivo gerava ~15/s no meio de jogo (acumulando >100 mil entre
+eventos) enquanto um quiz dava +35 fixo a cada 90–120 min — a UI dizia "passivo é
+escasso; quiz vale +35", o que era falso. Reformulação coordenada:
+
+- **Passivo reduzido a um filete** (`INSIGHT_PER_BIRTH` 0.018→0.0006, `INSIGHT_DIV_FACTOR`
+  0.005→0.0003, `INSIGHT_POP_FACTOR` 0.00006→0.0000008) — corte de ~25–30×.
+- **O Laboratório agora amplia a recompensa do quiz, não o passivo.** Acaba o laço de
+  fuga (insight passivo → mais lab → mais passivo); investir em lab passa a fortalecer
+  o motor ativo (o quiz). Descrição do upgrade atualizada.
+- **Recompensa do quiz escala com dificuldade e com o lab**: base +35 / +80 / +140
+  (×directedMutation × labMul), no lugar de +35 fixo.
+- **Cadência de eventos encurtada**: ~4–7 min (era 90–120 min), 2–4 min em cadeia,
+  primeiro quiz aos 3 min (era 10). Piso de 2,5 min; erros encurtam até 2 min.
+- Resultado modelado: o **quiz passa a ser 56–66% da renda de insight** em todas as
+  fases (era <1%), com o passivo como trickle secundário. Texto do rodapé corrigido.
 
 ### Verificação
 - Parsing estrutural do banco: 91 questões, 0 ids duplicados, todas com 4 opções,
   `cor` válido e reward/penalty presentes.
-- Rebalance validado em navegador: quiz correto (dif 1) creditou exatamente +25 insight
-  pelo fluxo real, sem erros de JS; passivo recalculado a partir das constantes do arquivo.
+- Rebalance validado em navegador: cadência reagendada cai na janela de 2,5–7 min;
+  quiz correto com lab 4 creditou a recompensa amplificada (base×1,4) pelo fluxo real,
+  sem erros de JS; shares de insight modelados a partir das constantes do arquivo.
 - Anti-repetição: 0 violações de repetição na janela em 300 sorteios; cobertura de
   88/91 questões e distribuição equilibrada entre categorias.
 - Smoke test no Chromium: jogo carrega, `QUESTIONS.length=91`, quiz abre pelo fluxo

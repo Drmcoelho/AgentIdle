@@ -155,7 +155,7 @@ details p{margin-top:.5rem;}
 <div class="world-state"><div class="resource"><span>ritmo</span><strong id="ws-pace">2.0x</strong></div><div class="resource"><span>mutação</span><strong id="ws-mut">7%</strong></div><div class="resource"><span>pressão</span><strong id="ws-pres">1.00</strong></div><div class="resource"><span>próx. evento</span><strong id="ws-timer">--:--</strong></div></div>
 <div class="active-effects" id="effects-panel"><div class="effect neutral"><strong>sem efeito ativo</strong><span class="effect-timer">mundo basal</span></div></div>
 </div></div>
-<div class="panel"><div class="panel-header"><h2>Upgrades</h2></div><div class="panel-body"><div class="upgrade-list" id="upgrades-list"></div><p class="mini" style="margin-top:.7rem">Biomassa: geração lenta — cada upgrade é uma decisão. Insight: passivo é um filete lento; o quiz é a fonte principal (25–95 por acerto, conforme a dificuldade). Entropia: superpopulação reduz tudo.</p></div></div>
+<div class="panel"><div class="panel-header"><h2>Upgrades</h2></div><div class="panel-body"><div class="upgrade-list" id="upgrades-list"></div><p class="mini" style="margin-top:.7rem">Biomassa: geração lenta — cada upgrade é uma decisão. Insight: passivo é um filete lento; o quiz é a fonte principal (35–140 por acerto, amplificado pelo Laboratório). Entropia: superpopulação reduz tudo.</p></div></div>
 <div class="panel" style="grid-column:1/-1"><div class="panel-header"><h2>Memória Evolutiva</h2><span id="prestige-memoria" style="font-size:1.1rem;font-weight:900;color:var(--violet)">0 ME</span></div><div class="panel-body">
           <div class="resource-strip" style="margin-bottom:.65rem">
             <div class="resource"><span>runs completadas</span><strong id="prestige-runs" style="color:var(--violet)">0</strong></div>
@@ -218,8 +218,8 @@ const VERSION='v5.0';
 const SCHEMA_VERSION=2; // versão do formato de save (localStorage)
 
 /* ═══ CONFIG ═══ */
-const CFG={W:100,H:72,MAX_AGENTS:640,AGENT_MAX_AGE:3600,MAX_FOOD:520,MAX_POISON:260,FOOD_ENERGY_BASE:34,POISON_DAMAGE:28,TRAIL_DECAY:0.965,REPRO_BASE:126,REPRO_COST_FRAC:0.52,REPRO_LOGISTIC_EXP:2.25,REPRO_CROWDING_THRESH:0.38,BIOMASS_PER_AGENT:0.0010,BIOMASS_RECYCLER_BONUS:0.00020,BIOMASS_FOOD_PASSIVE:0.00008,RECYCLER_GAIN_BASE:0.35,INSIGHT_PER_BIRTH:0.005,INSIGHT_DIV_FACTOR:0.002,INSIGHT_POP_FACTOR:0.000004,ENTROPY_RELIEF_BASE:0.035,ENTROPY_CROWDING_MULT:0.18,ENTROPY_POP_PASSIVE:0.00008,ENTROPY_CAP:100,CROWDING_THRESH:0.52,DRIFT_INTERVAL:1500,PACE_BASE:2,PACE_MIN:0.45,PACE_MAX:8,MUTATION_BASE:0.07,MUTATION_MIN:0.005,MUTATION_MAX:0.28,PRESSURE_BASE:1.0,PRESSURE_MIN:0.55,PRESSURE_MAX:2.35,PRESSURE_ENTROPY_CAP:3.2,EVENT_INTERVAL_MS:2*60*60*1000,
-  FIRST_EVENT_MS:10*60*1000,
+const CFG={W:100,H:72,MAX_AGENTS:640,AGENT_MAX_AGE:3600,MAX_FOOD:520,MAX_POISON:260,FOOD_ENERGY_BASE:34,POISON_DAMAGE:28,TRAIL_DECAY:0.965,REPRO_BASE:126,REPRO_COST_FRAC:0.52,REPRO_LOGISTIC_EXP:2.25,REPRO_CROWDING_THRESH:0.38,BIOMASS_PER_AGENT:0.0010,BIOMASS_RECYCLER_BONUS:0.00020,BIOMASS_FOOD_PASSIVE:0.00008,RECYCLER_GAIN_BASE:0.35,INSIGHT_PER_BIRTH:0.0006,INSIGHT_DIV_FACTOR:0.0003,INSIGHT_POP_FACTOR:0.0000008,ENTROPY_RELIEF_BASE:0.035,ENTROPY_CROWDING_MULT:0.18,ENTROPY_POP_PASSIVE:0.00008,ENTROPY_CAP:100,CROWDING_THRESH:0.52,DRIFT_INTERVAL:1500,PACE_BASE:2,PACE_MIN:0.45,PACE_MAX:8,MUTATION_BASE:0.07,MUTATION_MIN:0.005,MUTATION_MAX:0.28,PRESSURE_BASE:1.0,PRESSURE_MIN:0.55,PRESSURE_MAX:2.35,PRESSURE_ENTROPY_CAP:3.2,EVENT_INTERVAL_MS:5*60*1000,
+  FIRST_EVENT_MS:3*60*1000,
   QUIZ_TIMER_SEC:45,UP_INCUBATOR_FOOD:3.2,UP_INCUBATOR_SPAWN:0.07,UP_LOGISTICS_CAP:44,UP_MITOSIS_ENERGY:7.2,UP_RECYCLER_GAIN:0.30,UP_STABILIZER_RELIEF:0.012,UP_STABILIZER_ENTROPY:18,UP_LAB_INSIGHT:0.10};
 
 /* ═══ ESTADO ═══ */
@@ -395,13 +395,14 @@ function foodEnergy(){const mul=effects.reduce((m,e)=>m*(e.foodEnergyMul||1),1);
 function entropyDrag(){return 1+Math.max(0,idle.entropy)/(125+upgrades.stabilizer*CFG.UP_STABILIZER_ENTROPY);}
 function idleStep(nb,died){
   const pop=agents.length,cap=carryingCapacity(),crowd=pop/Math.max(1,cap);
-  const labMul=1+upgrades.lab*CFG.UP_LAB_INSIGHT;
+  // v5.0: o Laboratório agora amplia a recompensa do quiz (não o passivo) —
+  // o passivo é só um filete; o quiz é o motor principal de insight.
   const recycG=died*(CFG.RECYCLER_GAIN_BASE+upgrades.recycler*CFG.UP_RECYCLER_GAIN);
   const passB=pop*(CFG.BIOMASS_PER_AGENT+upgrades.recycler*CFG.BIOMASS_RECYCLER_BONUS)+foods.length*CFG.BIOMASS_FOOD_PASSIVE;
   idle.biomass+=passB+recycG;
   const permLabBonus=(prestige.perms.permLab||0)*0.8*runStats.eventsResolved*0.0001;
   const _iStress=entropyStress();
-  idle.insight+=Math.max(0,(nb*CFG.INSIGHT_PER_BIRTH+diversity()/260*CFG.INSIGHT_DIV_FACTOR+pop*CFG.INSIGHT_POP_FACTOR)*labMul*_iStress.insightMul+permLabBonus);
+  idle.insight+=Math.max(0,(nb*CFG.INSIGHT_PER_BIRTH+diversity()/260*CFG.INSIGHT_DIV_FACTOR+pop*CFG.INSIGHT_POP_FACTOR)*_iStress.insightMul+permLabBonus);
   idle.insight=Math.max(0,idle.insight); // nunca negativo
   const entropyMul=effects.reduce((m,e)=>m*(e.entropyMul||1),1);
   const ecoMul=1-Math.min(0.3,(prestige.perms.resilientEco||0)*0.10);
@@ -423,7 +424,7 @@ const upgradeDefs=[
   {id:'logistics', name:'Logística espacial',      desc:'Aumenta capacidade de suporte do mundo.',          currency:'biomass', base:220, scale:1.88, max:18, resetsOnAscend:true},
   {id:'recycler',  name:'Reciclagem trófica',      desc:'Mortes e veneno viram biomassa útil.',             currency:'biomass', base:260, scale:1.72, max:12, resetsOnAscend:true},
   {id:'stabilizer',name:'Estabilizador entrópico', desc:'Desacelera entropia e custo metabólico.',           currency:'insight', base:14,  scale:1.72, max:12, resetsOnAscend:true},
-  {id:'lab',       name:'Laboratório de seleção',  desc:'Mais insight por diversidade e nascimentos.',       currency:'insight', base:12,  scale:1.75, max:10, resetsOnAscend:true},
+  {id:'lab',       name:'Laboratório de seleção',  desc:'Amplia o insight ganho ao acertar quizzes.',         currency:'insight', base:12,  scale:1.75, max:10, resetsOnAscend:true},
 ];
 // Upgrades permanentes — comprados com Memória Evolutiva
 const permUpgradeDefs=[
@@ -546,8 +547,10 @@ function worldDrift(){
   }
 }
 function scheduleNextEvent(short=false){
-  const wrongPressure=Math.min(30,(runStats.quizWrong||0))*60*1000; // até -30min por erros
-  const base=short?rand(8,18)*60*1000:Math.max(30*60*1000,CFG.EVENT_INTERVAL_MS-wrongPressure);
+  // v5.0: cadência curta — o quiz é o motor principal de progressão. Erros
+  // encurtam um pouco a próxima janela (pressão). Piso de 2,5 min.
+  const wrongPressure=Math.min(20,(runStats.quizWrong||0))*6*1000; // até -2min por erros
+  const base=short?rand(2,4)*60*1000:Math.max(150*1000,rand(4,7)*60*1000-wrongPressure);
   world.nextEventMs=elapsedMs+base;
 }
 function maybeTimedEvent(){
@@ -847,10 +850,11 @@ function answerQuiz(idx){
     addEffect(eff);
     if(correct){
       const dm=1+(prestige.perms.directedMutation||0)*0.5;
-      // v5.0: recompensa do quiz escala com a dificuldade — o quiz é a fonte
-      // principal de insight, já que o passivo foi reduzido para ser escasso.
-      const qbase={1:25,2:55,3:95}[quizState.q.dif]||25;
-      const gain=Math.round(qbase*dm);
+      // v5.0: recompensa do quiz escala com a dificuldade E com o Laboratório.
+      // O passivo é só um filete; o quiz é a fonte principal de insight.
+      const labMul=1+upgrades.lab*CFG.UP_LAB_INSIGHT;
+      const qbase={1:35,2:80,3:140}[quizState.q.dif]||35;
+      const gain=Math.round(qbase*dm*labMul);
       idle.insight+=gain;
       // Prestígio 2+: acerto abre janela de upgrade com desconto
       if((prestige.runCount||0)>=2){
