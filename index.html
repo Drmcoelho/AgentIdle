@@ -155,7 +155,7 @@ details p{margin-top:.5rem;}
 <div class="world-state"><div class="resource"><span>ritmo</span><strong id="ws-pace">2.0x</strong></div><div class="resource"><span>mutação</span><strong id="ws-mut">7%</strong></div><div class="resource"><span>pressão</span><strong id="ws-pres">1.00</strong></div><div class="resource"><span>próx. evento</span><strong id="ws-timer">--:--</strong></div></div>
 <div class="active-effects" id="effects-panel"><div class="effect neutral"><strong>sem efeito ativo</strong><span class="effect-timer">mundo basal</span></div></div>
 </div></div>
-<div class="panel"><div class="panel-header"><h2>Upgrades</h2></div><div class="panel-body"><div class="upgrade-list" id="upgrades-list"></div><p class="mini" style="margin-top:.7rem">Biomassa: geração lenta — cada upgrade é uma decisão. Insight: passivo é escasso; quiz correto vale +35. Entropia: superpopulação reduz tudo.</p></div></div>
+<div class="panel"><div class="panel-header"><h2>Upgrades</h2></div><div class="panel-body"><div class="upgrade-list" id="upgrades-list"></div><p class="mini" style="margin-top:.7rem">Biomassa: geração lenta — cada upgrade é uma decisão. Insight: passivo é um filete lento; o quiz é a fonte principal (35–140 por acerto, amplificado pelo Laboratório). Entropia: superpopulação reduz tudo.</p></div></div>
 <div class="panel" style="grid-column:1/-1"><div class="panel-header"><h2>Memória Evolutiva</h2><span id="prestige-memoria" style="font-size:1.1rem;font-weight:900;color:var(--violet)">0 ME</span></div><div class="panel-body">
           <div class="resource-strip" style="margin-bottom:.65rem">
             <div class="resource"><span>runs completadas</span><strong id="prestige-runs" style="color:var(--violet)">0</strong></div>
@@ -214,13 +214,13 @@ details p{margin-top:.5rem;}
 <div class="modal-backdrop" id="modal-backdrop" aria-hidden="true"><div class="modal" id="modal-box" role="dialog" aria-modal="true"><div class="modal-header"><h2 id="modal-title">Evento</h2><span class="modal-type-label" id="modal-type-label">quiz</span></div><div class="modal-body" id="modal-body"></div></div></div>
 <div class="toast-wrap" id="toast-wrap"></div><script>
 /* ═══ VERSÃO — fonte única de verdade ═══ */
-const VERSION='v4.7';
+const VERSION='v5.0';
 const SCHEMA_VERSION=2; // versão do formato de save (localStorage)
 
 /* ═══ CONFIG ═══ */
-const CFG={W:100,H:72,MAX_AGENTS:640,AGENT_MAX_AGE:3600,MAX_FOOD:520,MAX_POISON:260,FOOD_ENERGY_BASE:34,POISON_DAMAGE:28,TRAIL_DECAY:0.965,REPRO_BASE:126,REPRO_COST_FRAC:0.52,REPRO_LOGISTIC_EXP:2.25,REPRO_CROWDING_THRESH:0.38,BIOMASS_PER_AGENT:0.0010,BIOMASS_RECYCLER_BONUS:0.00020,BIOMASS_FOOD_PASSIVE:0.00008,RECYCLER_GAIN_BASE:0.35,INSIGHT_PER_BIRTH:0.018,INSIGHT_DIV_FACTOR:0.005,INSIGHT_POP_FACTOR:0.00006,ENTROPY_RELIEF_BASE:0.035,ENTROPY_CROWDING_MULT:0.18,ENTROPY_POP_PASSIVE:0.00008,ENTROPY_CAP:100,CROWDING_THRESH:0.52,DRIFT_INTERVAL:1500,PACE_BASE:2,PACE_MIN:0.45,PACE_MAX:8,MUTATION_BASE:0.07,MUTATION_MIN:0.005,MUTATION_MAX:0.28,PRESSURE_BASE:1.0,PRESSURE_MIN:0.55,PRESSURE_MAX:2.35,PRESSURE_ENTROPY_CAP:3.2,EVENT_INTERVAL_MS:2*60*60*1000,
-  FIRST_EVENT_MS:10*60*1000,
-  QUIZ_TIMER_SEC:45,UP_INCUBATOR_FOOD:3.2,UP_INCUBATOR_SPAWN:0.07,UP_LOGISTICS_CAP:44,UP_MITOSIS_ENERGY:7.2,UP_RECYCLER_GAIN:0.30,UP_STABILIZER_RELIEF:0.012,UP_STABILIZER_ENTROPY:18,UP_LAB_INSIGHT:0.22};
+const CFG={W:100,H:72,MAX_AGENTS:640,AGENT_MAX_AGE:3600,MAX_FOOD:520,MAX_POISON:260,FOOD_ENERGY_BASE:34,POISON_DAMAGE:28,TRAIL_DECAY:0.965,REPRO_BASE:126,REPRO_COST_FRAC:0.52,REPRO_LOGISTIC_EXP:2.25,REPRO_CROWDING_THRESH:0.38,BIOMASS_PER_AGENT:0.0010,BIOMASS_RECYCLER_BONUS:0.00020,BIOMASS_FOOD_PASSIVE:0.00008,RECYCLER_GAIN_BASE:0.35,INSIGHT_PER_BIRTH:0.0006,INSIGHT_DIV_FACTOR:0.0003,INSIGHT_POP_FACTOR:0.0000008,ENTROPY_RELIEF_BASE:0.035,ENTROPY_CROWDING_MULT:0.18,ENTROPY_POP_PASSIVE:0.00008,ENTROPY_CAP:100,CROWDING_THRESH:0.52,DRIFT_INTERVAL:1500,PACE_BASE:2,PACE_MIN:0.45,PACE_MAX:8,MUTATION_BASE:0.07,MUTATION_MIN:0.005,MUTATION_MAX:0.28,PRESSURE_BASE:1.0,PRESSURE_MIN:0.55,PRESSURE_MAX:2.35,PRESSURE_ENTROPY_CAP:3.2,EVENT_INTERVAL_MS:5*60*1000,
+  FIRST_EVENT_MS:3*60*1000,
+  QUIZ_TIMER_SEC:45,UP_INCUBATOR_FOOD:3.2,UP_INCUBATOR_SPAWN:0.07,UP_LOGISTICS_CAP:44,UP_MITOSIS_ENERGY:7.2,UP_RECYCLER_GAIN:0.30,UP_STABILIZER_RELIEF:0.012,UP_STABILIZER_ENTROPY:18,UP_LAB_INSIGHT:0.10};
 
 /* ═══ ESTADO ═══ */
 let running=true,cycle=0,nextId=1,births=0,deaths=0,predEnabled=false,selectedId=null,cycleAcc=0,elapsedMs=0,lastFrameTs=0;
@@ -395,13 +395,14 @@ function foodEnergy(){const mul=effects.reduce((m,e)=>m*(e.foodEnergyMul||1),1);
 function entropyDrag(){return 1+Math.max(0,idle.entropy)/(125+upgrades.stabilizer*CFG.UP_STABILIZER_ENTROPY);}
 function idleStep(nb,died){
   const pop=agents.length,cap=carryingCapacity(),crowd=pop/Math.max(1,cap);
-  const labMul=1+upgrades.lab*CFG.UP_LAB_INSIGHT;
+  // v5.0: o Laboratório agora amplia a recompensa do quiz (não o passivo) —
+  // o passivo é só um filete; o quiz é o motor principal de insight.
   const recycG=died*(CFG.RECYCLER_GAIN_BASE+upgrades.recycler*CFG.UP_RECYCLER_GAIN);
   const passB=pop*(CFG.BIOMASS_PER_AGENT+upgrades.recycler*CFG.BIOMASS_RECYCLER_BONUS)+foods.length*CFG.BIOMASS_FOOD_PASSIVE;
   idle.biomass+=passB+recycG;
   const permLabBonus=(prestige.perms.permLab||0)*0.8*runStats.eventsResolved*0.0001;
   const _iStress=entropyStress();
-  idle.insight+=Math.max(0,(nb*CFG.INSIGHT_PER_BIRTH+diversity()/260*CFG.INSIGHT_DIV_FACTOR+pop*CFG.INSIGHT_POP_FACTOR)*labMul*_iStress.insightMul+permLabBonus);
+  idle.insight+=Math.max(0,(nb*CFG.INSIGHT_PER_BIRTH+diversity()/260*CFG.INSIGHT_DIV_FACTOR+pop*CFG.INSIGHT_POP_FACTOR)*_iStress.insightMul+permLabBonus);
   idle.insight=Math.max(0,idle.insight); // nunca negativo
   const entropyMul=effects.reduce((m,e)=>m*(e.entropyMul||1),1);
   const ecoMul=1-Math.min(0.3,(prestige.perms.resilientEco||0)*0.10);
@@ -423,7 +424,7 @@ const upgradeDefs=[
   {id:'logistics', name:'Logística espacial',      desc:'Aumenta capacidade de suporte do mundo.',          currency:'biomass', base:220, scale:1.88, max:18, resetsOnAscend:true},
   {id:'recycler',  name:'Reciclagem trófica',      desc:'Mortes e veneno viram biomassa útil.',             currency:'biomass', base:260, scale:1.72, max:12, resetsOnAscend:true},
   {id:'stabilizer',name:'Estabilizador entrópico', desc:'Desacelera entropia e custo metabólico.',           currency:'insight', base:14,  scale:1.72, max:12, resetsOnAscend:true},
-  {id:'lab',       name:'Laboratório de seleção',  desc:'Mais insight por diversidade e nascimentos.',       currency:'insight', base:12,  scale:1.75, max:10, resetsOnAscend:true},
+  {id:'lab',       name:'Laboratório de seleção',  desc:'Amplia o insight ganho ao acertar quizzes.',         currency:'insight', base:12,  scale:1.75, max:10, resetsOnAscend:true},
 ];
 // Upgrades permanentes — comprados com Memória Evolutiva
 const permUpgradeDefs=[
@@ -546,8 +547,10 @@ function worldDrift(){
   }
 }
 function scheduleNextEvent(short=false){
-  const wrongPressure=Math.min(30,(runStats.quizWrong||0))*60*1000; // até -30min por erros
-  const base=short?rand(8,18)*60*1000:Math.max(30*60*1000,CFG.EVENT_INTERVAL_MS-wrongPressure);
+  // v5.0: cadência curta — o quiz é o motor principal de progressão. Erros
+  // encurtam um pouco a próxima janela (pressão). Piso de 2,5 min.
+  const wrongPressure=Math.min(20,(runStats.quizWrong||0))*6*1000; // até -2min por erros
+  const base=short?rand(2,4)*60*1000:Math.max(150*1000,rand(4,7)*60*1000-wrongPressure);
   world.nextEventMs=elapsedMs+base;
 }
 function maybeTimedEvent(){
@@ -619,6 +622,46 @@ const QUESTIONS=[
 {id:'j7',cat:'o-jogo',dif:3,stem:'Por que agentes com gene social negativo têm vantagem em escassez?',opts:['São mais rápidos','Social negativo repele vizinhos → dispersão maior → menor competição local por comida','Social negativo aumenta cautela','Gene social não afeta busca de comida'],cor:1,exp:'friend detectado → ax += dx/mag × social × 0.08. Se social < 0, vetor inverte: agente se afasta. Dispersão reduz sobreposição de raios de busca → mais comida por agente.',reward:{id:'rq',name:'Estratégia antisocial',type:'buff',cycles:2300,food:60,insight:14},penalty:{id:'pq',name:'Clustering mal entendido',type:'debuff',cycles:1900,food:-40,entropy:10}},
 {id:'j8',cat:'o-jogo',dif:3,stem:'cycleAccumulator e effectivePace() servem para:',opts:['Medir FPS do navegador','Separar velocidade de simulação da velocidade de renderização — permite frações de ciclo por frame sem saltos','Controlar taxa de mutação','São redundantes com requestAnimationFrame'],cor:1,exp:'cycleAcc += effectivePace(); steps = floor(cycleAcc); cycleAcc -= steps. Desacopla simulação de renderização. Pace 1.7 = 1 ciclo num frame, 2 no seguinte, alternando suavemente.',reward:{id:'rq',name:'Desacoplamento temporal',type:'buff',cycles:2400,insight:16,pace:.4},penalty:{id:'pq',name:'Saltos de simulação',type:'debuff',cycles:2000,pace:-.5,entropy:8}},
 {id:'j9',cat:'o-jogo',dif:3,stem:'Por que worldDrift usa rand(-0.28, 0.28) simétrico para pace nesta v3, diferente da v2 que usava rand(-0.25, 0.32)?',opts:['Erro de digitação','v2 tinha viés positivo que acelerava o mundo gradualmente. Simétrico elimina esse viés.','Simétrico é mais rápido computacionalmente','Não existe diferença funcional'],cor:1,exp:'v2: E[drift] = 0.035 > 0. Ao longo de ciclos, world.pace tendia a subir até o clamp. v3: E[drift] = 0. Oscilação ao redor do base sem tendência sistemática.',reward:{id:'rq',name:'Balanceamento simétrico',type:'buff',cycles:2600,insight:18,entropy:-8},penalty:{id:'pq',name:'Viés de aceleração',type:'debuff',cycles:2200,pace:.5,entropy:10}},
+/* ── v5.0 — concorrência ── */
+{id:'con1',cat:'concorrencia',dif:1,stem:'O que é uma "race condition"?',opts:['Um erro de digitação no código','Dois acessos concorrentes a um dado compartilhado cujo resultado depende da ordem de execução','Falta de memória RAM','Excesso de comentários'],cor:1,exp:'Race condition: o resultado depende de qual thread chega primeiro a um recurso compartilhado. Não-determinístico e difícil de reproduzir.',reward:{id:'rq',name:'Acesso sincronizado',type:'buff',cycles:1600,insight:8,pace:.2},penalty:{id:'pq',name:'Disputa de recurso',type:'debuff',cycles:1300,entropy:6,pressure:.1}},
+{id:'con2',cat:'concorrencia',dif:1,stem:'O que um mutex garante?',opts:['Que o código roda mais rápido','Exclusão mútua — só uma thread na seção crítica por vez','Que não existem bugs','Mais memória disponível'],cor:1,exp:'Mutex (mutual exclusion): protege a seção crítica. Enquanto uma thread o detém, as outras esperam. Evita race conditions ao custo de serialização.',reward:{id:'rq',name:'Seção crítica protegida',type:'buff',cycles:1600,insight:8,pace:.2},penalty:{id:'pq',name:'Concorrência insegura',type:'debuff',cycles:1300,entropy:6,pressure:.1}},
+{id:'con3',cat:'concorrencia',dif:2,stem:'O que caracteriza um deadlock?',opts:['Threads bloqueadas em ciclo, cada uma esperando um recurso que outra detém — nenhuma avança','Um tipo de variável','Quando o programa roda rápido demais','Uma técnica de ordenação'],cor:0,exp:'Deadlock: espera circular. A→recurso de B, B→recurso de A. Sem intervenção, ambas travam para sempre.',reward:{id:'rq',name:'Fluxo destravado',type:'buff',cycles:2000,insight:12,entropy:-8},penalty:{id:'pq',name:'Espera circular',type:'debuff',cycles:1700,pressure:.18,entropy:10}},
+{id:'con4',cat:'concorrencia',dif:2,stem:'Uma operação "atômica" é aquela que:',opts:['Usa energia nuclear','Executa de forma indivisível: completa inteira ou nem ocorre, sem estados intermediários visíveis','É sempre lenta','Só roda em GPUs'],cor:1,exp:'Atomicidade: nenhuma outra thread observa um estado parcial. Base de contadores e estruturas lock-free.',reward:{id:'rq',name:'Operação indivisível',type:'buff',cycles:2000,insight:12,entropy:-8},penalty:{id:'pq',name:'Estado inconsistente',type:'debuff',cycles:1700,pressure:.18,entropy:10}},
+{id:'con5',cat:'concorrencia',dif:3,stem:'Por que o laço principal desta simulação não sofre race conditions?',opts:['Porque usa muitos mutexes','Porque JS roda em um event loop single-thread — não há threads compartilhando a mesma memória nesse laço','Porque é escrito em C','Porque desativa a CPU'],cor:1,exp:'O modelo de concorrência do JS é cooperativo e single-thread. simStep() roda até o fim sem interrupção. Web Workers existiriam, mas isolados por troca de mensagens.',reward:{id:'rq',name:'Modelo cooperativo',type:'buff',cycles:2500,insight:18,entropy:-10},penalty:{id:'pq',name:'Ilusão de paralelismo',type:'debuff',cycles:2100,pressure:.22,entropy:14}},
+{id:'con6',cat:'concorrencia',dif:3,stem:'As quatro condições de Coffman descrevem:',opts:['Como ordenar arrays','As condições necessárias para um deadlock: exclusão mútua, posse-e-espera, não-preempção e espera circular','Como comprimir dados','Tipos de variáveis'],cor:1,exp:'Quebrar qualquer uma das quatro condições previne deadlock. Por isso sistemas impõem ordem global de aquisição de recursos (mata a espera circular).',reward:{id:'rq',name:'Prevenção de deadlock',type:'buff',cycles:2500,insight:18,entropy:-10},penalty:{id:'pq',name:'Bloqueio sistêmico',type:'debuff',cycles:2100,pressure:.22,entropy:14}},
+/* ── v5.0 — redes ── */
+{id:'net1',cat:'redes',dif:1,stem:'Diferença essencial entre TCP e UDP?',opts:['TCP é confiável e ordenado (com handshake); UDP é sem garantia e mais leve','São idênticos','UDP é sempre melhor','TCP não usa IP'],cor:0,exp:'TCP: entrega confiável, ordenada, com controle de fluxo. UDP: dispara e esquece — menor latência, sem garantia. Streaming e jogos preferem UDP.',reward:{id:'rq',name:'Transporte confiável',type:'buff',cycles:1600,insight:8,pace:.2},penalty:{id:'pq',name:'Pacotes perdidos',type:'debuff',cycles:1300,entropy:6,pressure:.1}},
+{id:'net2',cat:'redes',dif:1,stem:'O que o DNS faz?',opts:['Criptografa senhas','Traduz nomes de domínio em endereços IP','Acelera o processador','Armazena arquivos'],cor:1,exp:'DNS é a agenda da internet: converte um nome legível em um IP roteável. Hierárquico e cacheado em várias camadas.',reward:{id:'rq',name:'Resolução de nomes',type:'buff',cycles:1600,insight:8,pace:.2},penalty:{id:'pq',name:'Nome não resolvido',type:'debuff',cycles:1300,entropy:6,pressure:.1}},
+{id:'net3',cat:'redes',dif:2,stem:'Latência e largura de banda diferem porque:',opts:['São sinônimos','Latência é o atraso até o primeiro byte; largura de banda é o volume transferido por unidade de tempo','Latência mede só download','Largura de banda mede só o ping'],cor:1,exp:'Um cano largo (alta banda) ainda pode ter alta latência (cano longo). São dimensões ortogonais do desempenho de rede.',reward:{id:'rq',name:'Canal otimizado',type:'buff',cycles:2000,insight:12,entropy:-8},penalty:{id:'pq',name:'Gargalo de canal',type:'debuff',cycles:1700,pressure:.18,entropy:10}},
+{id:'net4',cat:'redes',dif:2,stem:'Por que arquiteturas em camadas (OSI / TCP-IP) são úteis?',opts:['Deixam tudo mais lento','Cada camada abstrai a inferior, permitindo evoluir as partes de forma independente','Eliminam a necessidade de hardware','Só servem para documentação'],cor:1,exp:'Abstração em camadas: a aplicação não sabe se o transporte é fibra ou rádio. Cada nível tem um contrato. Mesma ideia de modularidade do software.',reward:{id:'rq',name:'Abstração em camadas',type:'buff',cycles:2000,insight:12,entropy:-8},penalty:{id:'pq',name:'Acoplamento rígido',type:'debuff',cycles:1700,pressure:.18,entropy:10}},
+{id:'net5',cat:'redes',dif:3,stem:'O algoritmo de Dijkstra, usado em roteamento, encontra:',opts:['O maior caminho','O caminho de menor custo de uma origem aos demais nós, com pesos não-negativos','Um ciclo qualquer','A média dos pesos'],cor:1,exp:'Dijkstra: guloso com fila de prioridade, O((V+E)log V). Pesos negativos quebram a garantia — aí usa-se Bellman-Ford.',reward:{id:'rq',name:'Rota ótima',type:'buff',cycles:2500,insight:18,entropy:-10},penalty:{id:'pq',name:'Rota subótima',type:'debuff',cycles:2100,pressure:.22,entropy:14}},
+{id:'net6',cat:'redes',dif:3,stem:'Back-pressure em sistemas de fluxo é:',opts:['Um ataque de rede','O consumidor sinalizando ao produtor para desacelerar, evitando estouro de buffer — como a entropia freando o crescimento aqui','Aumentar a velocidade sempre','Apagar mensagens antigas'],cor:1,exp:'Sem back-pressure, um produtor rápido afoga um consumidor lento e o buffer estoura. A entropia desta simulação é uma forma de back-pressure ecológico.',reward:{id:'rq',name:'Fluxo regulado',type:'buff',cycles:2500,insight:18,entropy:-12},penalty:{id:'pq',name:'Buffer estourado',type:'debuff',cycles:2100,pressure:.22,entropy:14}},
+/* ── v5.0 — grafos ── */
+{id:'grf1',cat:'grafos',dif:1,stem:'Um grafo é:',opts:['Uma planilha','Um conjunto de vértices ligados por arestas','Um gráfico de barras','Uma função matemática'],cor:1,exp:'Grafo G=(V,E): vértices e arestas. Modela redes sociais, mapas, dependências, e a vizinhança entre estes agentes.',reward:{id:'rq',name:'Estrutura relacional',type:'buff',cycles:1600,insight:8,pace:.2},penalty:{id:'pq',name:'Relações perdidas',type:'debuff',cycles:1300,entropy:6,pressure:.1}},
+{id:'grf2',cat:'grafos',dif:1,stem:'BFS percorre um grafo:',opts:['Em profundidade até o fim de cada ramo','Por níveis, camada a camada a partir da origem','Aleatoriamente','De trás para frente'],cor:1,exp:'BFS usa fila e visita por distância crescente. Em grafo não-ponderado, encontra o caminho mais curto em número de arestas.',reward:{id:'rq',name:'Exploração por níveis',type:'buff',cycles:1600,insight:8,pace:.2},penalty:{id:'pq',name:'Busca desordenada',type:'debuff',cycles:1300,entropy:6,pressure:.1}},
+{id:'grf3',cat:'grafos',dif:2,stem:'DFS se apoia em qual estrutura (implícita na recursão)?',opts:['Fila (queue)','Pilha (stack)','Hash map','Heap'],cor:1,exp:'DFS desce o máximo possível antes de voltar — comportamento LIFO. A pilha de chamadas da recursão é a pilha implícita.',reward:{id:'rq',name:'Profundidade controlada',type:'buff',cycles:2000,insight:12,entropy:-8},penalty:{id:'pq',name:'Recursão sem rumo',type:'debuff',cycles:1700,pressure:.18,entropy:10}},
+{id:'grf4',cat:'grafos',dif:2,stem:'Como detectar um ciclo em um grafo direcionado?',opts:['Contando vértices','Com DFS marcando nós na pilha de recursão — uma aresta de retorno indica ciclo','Somando os pesos','Ordenando as arestas'],cor:1,exp:'Se a DFS encontra um nó que ainda está na pilha de recursão (cinza), há uma aresta de retorno e portanto um ciclo.',reward:{id:'rq',name:'Ciclo identificado',type:'buff',cycles:2000,insight:12,entropy:-8},penalty:{id:'pq',name:'Ciclo oculto',type:'debuff',cycles:1700,pressure:.18,entropy:10}},
+{id:'grf5',cat:'grafos',dif:3,stem:'Ordenação topológica só é possível se o grafo for:',opts:['Completo','Um DAG — grafo acíclico direcionado','Não-direcionado','Ponderado'],cor:1,exp:'Topological sort lineariza dependências. Um ciclo torna a ordem impossível (A antes de B antes de A). Por isso exige um DAG.',reward:{id:'rq',name:'Dependências ordenadas',type:'buff',cycles:2500,insight:18,entropy:-10},penalty:{id:'pq',name:'Dependência circular',type:'debuff',cycles:2100,pressure:.22,entropy:14}},
+{id:'grf6',cat:'grafos',dif:3,stem:'A vizinhança entre agentes forma um grafo dinâmico. O que muda a cada ciclo?',opts:['Os vértices desaparecem','As arestas — a vizinhança se redefine conforme os agentes se movem','Nada muda','O número de genes'],cor:1,exp:'Vértices (agentes) persistem entre ciclos, mas as arestas (quem está perto de quem) mudam a cada movimento. É um grafo de topologia dinâmica — exatamente o que o spatial grid recalcula.',reward:{id:'rq',name:'Topologia viva',type:'buff',cycles:2500,insight:18,diversity:12},penalty:{id:'pq',name:'Conectividade instável',type:'debuff',cycles:2100,pressure:.22,entropy:14}},
+/* ── v5.0 — ampliações ── */
+{id:'a12',cat:'algoritmos',dif:1,stem:'Um algoritmo guloso (greedy) difere de DP porque:',opts:['Greedy é sempre ótimo','Greedy escolhe o ótimo local a cada passo sem reconsiderar; DP combina soluções de subproblemas','São a mesma coisa','DP é sempre mais lento e pior'],cor:1,exp:'Greedy é rápido mas só é ótimo quando o problema tem subestrutura gulosa (ex.: Dijkstra). DP é mais geral, ao custo de tempo/memória.',reward:{id:'rq',name:'Decisão gulosa certa',type:'buff',cycles:1600,insight:8,pace:.2},penalty:{id:'pq',name:'Ótimo local enganoso',type:'debuff',cycles:1300,entropy:6,pressure:.1}},
+{id:'a13',cat:'algoritmos',dif:2,stem:'A técnica "two pointers" em array ordenado serve para:',opts:['Ordenar o array','Achar um par com soma-alvo em O(n), sem laço aninhado','Inverter strings','Calcular médias'],cor:1,exp:'Dois ponteiros nas pontas: se a soma é grande demais, recua o da direita; se pequena, avança o da esquerda. Varre o array uma vez.',reward:{id:'rq',name:'Varredura linear',type:'buff',cycles:2000,insight:12,entropy:-8},penalty:{id:'pq',name:'Laço redundante',type:'debuff',cycles:1700,pressure:.18,entropy:10}},
+{id:'a14',cat:'algoritmos',dif:3,stem:'Por que "sliding window" reduz O(n²) para O(n) em problemas de subarray?',opts:['Usa mais memória','Reaproveita o resultado da janela anterior em vez de recomputar do zero','Ignora elementos','Ordena antes'],cor:1,exp:'Ao deslizar a janela, soma o novo elemento e subtrai o que saiu — O(1) por passo, O(n) no total, em vez de recalcular cada subarray.',reward:{id:'rq',name:'Janela deslizante',type:'buff',cycles:2500,insight:18,entropy:-10},penalty:{id:'pq',name:'Recomputação total',type:'debuff',cycles:2100,pressure:.22,entropy:14}},
+{id:'e9',cat:'estruturas',dif:1,stem:'Uma pilha (stack) segue qual disciplina?',opts:['FIFO','LIFO — último a entrar, primeiro a sair','Acesso aleatório','Ordenada por valor'],cor:1,exp:'LIFO: push/pop no topo. Usada na pilha de chamadas, desfazer/refazer e avaliação de expressões.',reward:{id:'rq',name:'Ordem de pilha',type:'buff',cycles:1600,insight:8,pace:.2},penalty:{id:'pq',name:'Topo perdido',type:'debuff',cycles:1300,entropy:6,pressure:.1}},
+{id:'e10',cat:'estruturas',dif:2,stem:'Uma trie é especialmente eficiente para:',opts:['Somar inteiros','Buscar prefixos de strings em tempo proporcional ao comprimento da chave','Ordenar floats','Comprimir imagens'],cor:1,exp:'Trie (árvore de prefixos): cada nível é um caractere. Busca/inserção em O(L), independente do número de palavras. Base de autocompletar.',reward:{id:'rq',name:'Prefixos eficientes',type:'buff',cycles:2000,insight:12,entropy:-8},penalty:{id:'pq',name:'Busca por força bruta',type:'debuff',cycles:1700,pressure:.18,entropy:10}},
+{id:'e11',cat:'estruturas',dif:3,stem:'Union-Find (DSU) com compressão de caminho serve para:',opts:['Ordenar listas','Gerenciar conjuntos disjuntos com união/busca em quase O(1) amortizado','Buscar em árvores binárias','Calcular hashes'],cor:1,exp:'DSU com compressão de caminho + união por rank atinge custo amortizado O(alfa(n)), praticamente constante. Núcleo do Kruskal e de conectividade dinâmica.',reward:{id:'rq',name:'Conjuntos unificados',type:'buff',cycles:2500,insight:18,entropy:-10},penalty:{id:'pq',name:'Partições fragmentadas',type:'debuff',cycles:2100,pressure:.22,entropy:14}},
+{id:'c8',cat:'complexidade',dif:1,stem:'O(2^n) significa que o custo:',opts:['Cresce devagar','Dobra a cada elemento adicional — explosão exponencial','É constante','Diminui com n'],cor:1,exp:'Cada item novo duplica o trabalho. Para n=60 já são ~10^18 operações. Por isso força bruta em subconjuntos é inviável sem poda.',reward:{id:'rq',name:'Escala dominada',type:'buff',cycles:1600,insight:8,pace:.2},penalty:{id:'pq',name:'Explosão combinatória',type:'debuff',cycles:1300,entropy:6,pressure:.1}},
+{id:'c9',cat:'complexidade',dif:2,stem:'Complexidade de espaço mede:',opts:['O tempo de execução','A memória adicional usada em função do tamanho da entrada','O número de funções','A velocidade do disco'],cor:1,exp:'Espaço e tempo são recursos distintos. Às vezes troca-se um pelo outro (ex.: memoization gasta memória para ganhar tempo).',reward:{id:'rq',name:'Memória contabilizada',type:'buff',cycles:2000,insight:12,entropy:-8},penalty:{id:'pq',name:'Estouro de memória',type:'debuff',cycles:1700,pressure:.18,entropy:10}},
+{id:'c10',cat:'complexidade',dif:3,stem:'Por que O(n log n) é o piso da ordenação por comparação?',opts:['Por convenção','A árvore de decisão tem n! folhas; sua altura mínima é log2(n!) = Theta(n log n)','Porque arrays têm n elementos','Não é verdade'],cor:1,exp:'Cada comparação é um ramo binário. Para distinguir as n! permutações, a árvore precisa de altura >= log2(n!), que por Stirling é Theta(n log n). Counting/radix escapam por não comparar.',reward:{id:'rq',name:'Limite inferior provado',type:'buff',cycles:2500,insight:18,entropy:-10},penalty:{id:'pq',name:'Comparações em excesso',type:'debuff',cycles:2100,pressure:.22,entropy:14}},
+{id:'s7',cat:'sistemas',dif:1,stem:'Homeostase é:',opts:['Crescimento ilimitado','Manter um estado interno estável apesar de perturbações externas','Ausência total de regulação','Morte celular'],cor:1,exp:'Homeostase: regulação que devolve o sistema ao equilíbrio. A entropia que sobe com superpopulação e cai com folga é um exemplo homeostático.',reward:{id:'rq',name:'Equilíbrio regulado',type:'buff',cycles:1600,entropy:-8,insight:6},penalty:{id:'pq',name:'Desregulação',type:'debuff',cycles:1300,entropy:8,pressure:.1}},
+{id:'s8',cat:'sistemas',dif:2,stem:'Um sistema caótico se caracteriza por:',opts:['Ser aleatório e sem regras','Determinismo com sensibilidade extrema às condições iniciais (efeito borboleta)','Nunca mudar','Ser sempre periódico'],cor:1,exp:'Caos não é aleatório: as regras são deterministas, mas erros minúsculos na condição inicial divergem exponencialmente, tornando previsão de longo prazo impossível.',reward:{id:'rq',name:'Leitura do caos',type:'buff',cycles:2000,insight:12,entropy:-8},penalty:{id:'pq',name:'Divergência sensível',type:'debuff',cycles:1700,mutation:.04,entropy:10}},
+{id:'s9',cat:'sistemas',dif:3,stem:'A Lei da Variedade Requerida (Ashby) afirma:',opts:['Menos é sempre mais','Só variedade absorve variedade — o controle precisa de ao menos tanta variedade quanto o sistema controlado','Sistemas simples são incontroláveis','Variedade é irrelevante'],cor:1,exp:'Ashby: um regulador só domina um sistema se puder igualar sua variedade de estados. Poucos controles (upgrades, eventos) precisam ter alavancagem alta para reger um mundo complexo.',reward:{id:'rq',name:'Variedade suficiente',type:'buff',cycles:2500,insight:18,entropy:-10},penalty:{id:'pq',name:'Controle insuficiente',type:'debuff',cycles:2100,pressure:.22,entropy:14}},
+{id:'g8',cat:'genetica',dif:1,stem:'Genótipo e fenótipo diferem porque:',opts:['São sinônimos','Genótipo são os genes; fenótipo é o traço/comportamento expresso no ambiente','Fenótipo é herdado e genótipo não','Genótipo só existe em plantas'],cor:1,exp:'Aqui o genótipo são os 6 genes; o fenótipo é o comportamento resultante (buscar comida, fugir). O ambiente media a expressão.',reward:{id:'rq',name:'Expressão adaptada',type:'buff',cycles:1600,insight:8,diversity:8},penalty:{id:'pq',name:'Expressão confusa',type:'debuff',cycles:1300,entropy:6,pressure:.1}},
+{id:'g9',cat:'genetica',dif:2,stem:'Em escassez de comida, a seleção tende a favorecer agentes com:',opts:['Metabolismo alto','Metabolismo baixo — gastam menos energia para existir','Velocidade máxima sempre','Memória zero'],cor:1,exp:'Custo energético cresce com o metabolismo. Sob escassez, quem gasta menos sobrevive mais tempo para reproduzir. A pressão muda quando a comida é abundante.',reward:{id:'rq',name:'Eficiência metabólica',type:'buff',cycles:2000,insight:12,entropy:-8},penalty:{id:'pq',name:'Gasto excessivo',type:'debuff',cycles:1700,pressure:.18,entropy:10}},
+{id:'g10',cat:'genetica',dif:3,stem:'Uma fitness landscape (paisagem adaptativa) é:',opts:['Um mapa do território físico','Um mapa do fitness sobre o espaço de genes; a evolução sobe gradientes e pode travar em ótimos locais','A lista de agentes vivos','O gráfico de população'],cor:1,exp:'Picos = combinações de genes muito aptas; vales = pouco aptas. A seleção sobe o gradiente local, podendo ficar presa num pico menor. Mutação grande ajuda a saltar vales.',reward:{id:'rq',name:'Salto adaptativo',type:'buff',cycles:2500,insight:18,diversity:14},penalty:{id:'pq',name:'Ótimo local',type:'debuff',cycles:2100,mutation:.05,entropy:12}},
+{id:'p8',cat:'probabilidade',dif:1,stem:'O valor esperado E[X] é:',opts:['O maior resultado possível','A média dos resultados ponderada pelas probabilidades','Sempre zero','A variância'],cor:1,exp:'E[X] = soma de (valor x probabilidade). É o centro de massa da distribuição — o que se espera em média ao repetir muitas vezes.',reward:{id:'rq',name:'Expectativa calibrada',type:'buff',cycles:1600,insight:8,pace:.2},penalty:{id:'pq',name:'Estimativa enviesada',type:'debuff',cycles:1300,entropy:6,pressure:.1}},
+{id:'p9',cat:'probabilidade',dif:2,stem:'O Teorema de Bayes serve para:',opts:['Ordenar eventos','Atualizar uma probabilidade prévia (prior) com nova evidência, gerando a posterior','Somar probabilidades independentes','Calcular médias simples'],cor:1,exp:'P(H|E) = P(E|H)P(H)/P(E). Bayes formaliza aprender com evidência — a base da inferência adaptativa.',reward:{id:'rq',name:'Crença atualizada',type:'buff',cycles:2000,insight:12,entropy:-8},penalty:{id:'pq',name:'Prior teimosa',type:'debuff',cycles:1700,pressure:.18,entropy:10}},
+{id:'p10',cat:'probabilidade',dif:3,stem:'Métodos de Monte Carlo estimam quantidades:',opts:['Resolvendo equações de forma exata','Pela média de muitas amostras aleatórias, que converge ao valor real (lei dos grandes números)','Sem usar nenhuma aleatoriedade','Apenas em jogos de azar'],cor:1,exp:'Monte Carlo troca solução analítica por amostragem: simula muitas vezes e tira a média. Quanto mais amostras, menor o erro (cai com 1/raiz(N)).',reward:{id:'rq',name:'Estimativa convergente',type:'buff',cycles:2500,insight:18,entropy:-10},penalty:{id:'pq',name:'Amostragem insuficiente',type:'debuff',cycles:2100,pressure:.22,entropy:14}},
 ];
 
 const DILEMMAS=[
@@ -701,17 +744,36 @@ function triggerEvent(forceQuiz=false){
 let quizState={q:null,shuffled:[],correctIdx:-1,phase:'answer',epicData:null,isTutorial:false};
 let quizTimerInterval=null,quizTimerSec=0;
 
+/* Anti-repetição (v5.0): evita repetir questões recentes e favorece categorias
+   menos vistas, sem quebrar o reforço de dificuldade (hardEventChance). */
+const QUIZ_RECENT_WINDOW=8;  // bloqueia repetição dentro das últimas N questões servidas
+const QUIZ_RECENT_MAX=24;    // tamanho máximo do histórico mantido
+let recentQuizIds=[];        // fila de ids servidos recentemente
+let quizCatSeen={};          // contagem de questões servidas por categoria
+
+function recordQuizServed(q){
+  if(!q)return;
+  recentQuizIds.push(q.id);
+  if(recentQuizIds.length>QUIZ_RECENT_MAX)recentQuizIds.shift();
+  quizCatSeen[q.cat]=(quizCatSeen[q.cat]||0)+1;
+}
 function getQuizByDifficulty(){
   const pd=prestigeDiff();
   const ecDif=world.eventCount<4?1:world.eventCount<9?2:3;
   const maxDif=Math.min(3,Math.max(ecDif,pd.quizDifMax));
-  // hardEventChance: inclui questões de dificuldade máxima com maior frequência
-  const pool=QUESTIONS.filter(q=>q.dif<=maxDif);
-  const hardPool=QUESTIONS.filter(q=>q.dif===maxDif);
-  // Se hardEventChance > 1, duplicamos entradas hard para aumentar a probabilidade
-  const extra=pd.hardEventChance>1?Math.floor((pd.hardEventChance-1)*hardPool.length):0;
-  const finalPool=[...pool,...hardPool.slice(0,extra)];
-  return finalPool[Math.floor(Math.random()*finalPool.length)];
+  const eligible=QUESTIONS.filter(q=>q.dif<=maxDif);
+  // janela limitada ao tamanho do pool — sempre sobra pelo menos 1 questão fresca
+  const win=Math.min(QUIZ_RECENT_WINDOW,Math.max(0,eligible.length-1));
+  const blocked=new Set(recentQuizIds.slice(-win));
+  let fresh=eligible.filter(q=>!blocked.has(q.id));
+  if(!fresh.length)fresh=eligible;
+  // peso: categorias menos vistas pesam mais; dificuldade máxima recebe reforço
+  const hb=pd.hardEventChance>1?pd.hardEventChance:1;
+  let total=0;const weights=fresh.map(q=>{let w=1/(1+(quizCatSeen[q.cat]||0));if(q.dif===maxDif)w*=hb;total+=w;return w;});
+  let r=Math.random()*total,pick=fresh[fresh.length-1];
+  for(let i=0;i<fresh.length;i++){r-=weights[i];if(r<=0){pick=fresh[i];break;}}
+  recordQuizServed(pick);
+  return pick;
 }
 function shuffleAnswers(q){
   const idx=q.opts.map((t,i)=>({text:t,orig:i}));
@@ -730,7 +792,7 @@ function openEpicQuiz(ep){openQuiz({epic:ep});}
 
 function renderQuizPhaseAnswer(){
   const q=quizState.q;
-  const catMap={'algoritmos':'Algoritmos','estruturas':'Estruturas de Dados','complexidade':'Complexidade','sistemas':'Sistemas Complexos','genetica':'Algoritmos Genéticos','probabilidade':'Probabilidade','o-jogo':'O Próprio Jogo','socrates':'Filosofia'};
+  const catMap={'algoritmos':'Algoritmos','estruturas':'Estruturas de Dados','complexidade':'Complexidade','sistemas':'Sistemas Complexos','genetica':'Algoritmos Genéticos','probabilidade':'Probabilidade','concorrencia':'Concorrência','redes':'Redes','grafos':'Grafos','o-jogo':'O Próprio Jogo','socrates':'Filosofia'};
   const catLabel=catMap[q.cat]||q.cat;
   const difLabel='★'.repeat(q.dif)+'☆'.repeat(3-q.dif);
   const body=document.getElementById('modal-body');
@@ -788,11 +850,16 @@ function answerQuiz(idx){
     addEffect(eff);
     if(correct){
       const dm=1+(prestige.perms.directedMutation||0)*0.5;
-      idle.insight+=35*dm;
+      // v5.0: recompensa do quiz escala com a dificuldade E com o Laboratório.
+      // O passivo é só um filete; o quiz é a fonte principal de insight.
+      const labMul=1+upgrades.lab*CFG.UP_LAB_INSIGHT;
+      const qbase={1:35,2:80,3:140}[quizState.q.dif]||35;
+      const gain=Math.round(qbase*dm*labMul);
+      idle.insight+=gain;
       // Prestígio 2+: acerto abre janela de upgrade com desconto
       if((prestige.runCount||0)>=2){
         quizUpgradeWindow=QUIZ_WINDOW_CYCLES;
-        showToast('Janela de calibração (+35 insight)','Upgrades de insight -30% por '+QUIZ_WINDOW_CYCLES+' ciclos. Quiz é a principal fonte de insight avançado.');
+        showToast('Janela de calibração (+'+gain+' insight)','Upgrades de insight -30% por '+QUIZ_WINDOW_CYCLES+' ciclos. Quiz é a principal fonte de insight avançado.');
       }
     }
     runStats.eventsResolved++;
