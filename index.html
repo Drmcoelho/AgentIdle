@@ -214,7 +214,7 @@ details p{margin-top:.5rem;}
 <div class="modal-backdrop" id="modal-backdrop" aria-hidden="true"><div class="modal" id="modal-box" role="dialog" aria-modal="true"><div class="modal-header"><h2 id="modal-title">Evento</h2><span class="modal-type-label" id="modal-type-label">quiz</span></div><div class="modal-body" id="modal-body"></div></div></div>
 <div class="toast-wrap" id="toast-wrap"></div><script>
 /* ═══ VERSÃO — fonte única de verdade ═══ */
-const VERSION='v5.0';
+const VERSION='v5.0.1';
 const SCHEMA_VERSION=2; // versão do formato de save (localStorage)
 
 /* ═══ CONFIG ═══ */
@@ -804,7 +804,7 @@ function renderQuizPhaseAnswer(){
     <p class="modal-question">${q.stem}</p>
     <div class="quiz-timer-bar"><div class="quiz-timer-fill" id="qtf" style="width:100%"></div></div>
     <div class="modal-choices" id="modal-choices">
-      ${quizState.shuffled.map((t,i)=>`<button class="modal-choice" data-idx="\${i}" onclick="answerQuiz(${i})">${t}</button>`).join('')}
+      ${quizState.shuffled.map((t,i)=>`<button class="modal-choice" data-idx="${i}" onclick="answerQuiz(${i})">${t}</button>`).join('')}
     </div>`;
   // Sem timer em tutorial e em prestígios 0-1
   const useTimer=(prestige.runCount||0)>=2&&!quizState.isTutorial;
@@ -893,7 +893,7 @@ function openDilemma(){
   document.getElementById('modal-body').innerHTML=`
     <p class="modal-question">${currentDilemma.stem}</p>
     <div class="modal-choices">
-      ${currentDilemma.choices.map((c,i)=>`<button class="modal-choice" onclick="chooseDilemma(\${i})"><strong style="display:block;margin-bottom:.18rem">${c.label}</strong><span style="font-size:.82rem;color:var(--muted)">${c.desc}</span></button>`).join('')}
+      ${currentDilemma.choices.map((c,i)=>`<button class="modal-choice" onclick="chooseDilemma(${i})"><strong style="display:block;margin-bottom:.18rem">${c.label}</strong><span style="font-size:.82rem;color:var(--muted)">${c.desc}</span></button>`).join('')}
     </div>
     <p class="mini" style="color:var(--amber)">Não há resposta certa — há consequências.</p>`;
 }
@@ -918,7 +918,7 @@ function openSocrates(){
   document.getElementById('modal-body').innerHTML=`
     <p class="modal-question">${currentSocrates.stem}</p>
     <div class="modal-choices">
-      ${currentSocrates.choices.map((c,i)=>`<button class="modal-choice" onclick="chooseSocrates(\${i})"><strong style="display:block;margin-bottom:.18rem">${c.label}</strong><span style="font-size:.82rem;color:var(--muted)">${c.desc}</span></button>`).join('')}
+      ${currentSocrates.choices.map((c,i)=>`<button class="modal-choice" onclick="chooseSocrates(${i})"><strong style="display:block;margin-bottom:.18rem">${c.label}</strong><span style="font-size:.82rem;color:var(--muted)">${c.desc}</span></button>`).join('')}
     </div>
     <p class="mini" style="color:var(--violet)">Cada escolha tem consequências — nenhuma é errada.</p>`;
 }
