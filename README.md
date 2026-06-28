@@ -2,7 +2,7 @@
 
 > Idle game de **computação viva**: agentes evoluem por seleção emergente, o ambiente muda sozinho e eventos de raciocínio (quizzes de computação) desafiam o jogador.
 
-**Versão atual:** `v5.0` · arquivo único, sem build, sem dependências.
+**Versão atual:** `v5.0.1` · arquivo único, sem build, sem dependências.
 
 [▶ Jogar](index.html) — basta abrir o `index.html` em qualquer navegador moderno.
 

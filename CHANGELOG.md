@@ -3,6 +3,19 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/).
 Este projeto usa versionamento por *milestones* de jogo (não SemVer estrito).
 
+## [v5.0.1] — 2026-06-28
+
+### Corrigido
+- **Dilemas e eventos socráticos travavam o jogo** — as opções não respondiam ao
+  clique. Causa: a interpolação do índice no `onclick` estava escapada
+  (`chooseDilemma(\${i})` / `chooseSocrates(\${i})`) dentro do template literal,
+  renderizando `onclick="chooseDilemma(${i})"` literal — um SyntaxError ao clicar.
+  Como o modal bloqueia a simulação e (no mobile) não há tecla Escape, o jogo ficava
+  preso. Bug pré-existente (v4.x), exposto pela cadência curta da v5.0 (dilemas agora
+  aparecem a cada poucos minutos). Também corrigido o `data-idx` escapado do quiz.
+- Validado em navegador: opções de dilema e sócrates avançam e desabilitam
+  corretamente, sem erros de JS.
+
 ## [v5.0] — 2026-06-26
 
 Versão de conteúdo: foco no motor de questões (o principal eixo de progressão no prestígio 2+).
@@ -87,6 +100,7 @@ Primeira versão versionada no repositório (upload inicial).
 - Busca de vizinhos é O(n²) por ciclo (`nearest`/`nearestExcept`). *Spatial grid* marcado como pendente no código.
 - Sem fonte única de verdade para a versão (string espalhada no markup).
 
+[v5.0.1]: https://github.com/Drmcoelho/AgentIdle/releases/tag/v5.0.1
 [v5.0]: https://github.com/Drmcoelho/AgentIdle/releases/tag/v5.0
 [v4.7]: https://github.com/Drmcoelho/AgentIdle/releases/tag/v4.7
 [v4.6]: https://github.com/Drmcoelho/AgentIdle/releases/tag/v4.6
